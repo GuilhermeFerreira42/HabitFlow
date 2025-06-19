@@ -1,765 +1,1162 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HabitFlow | Controle de Hábitos</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' style='font-size: 90px;' text-anchor='middle' dominant-baseline='middle'>🚀</text></svg>">
+    <title>HabitFlow</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            500: '#3B82F6',
+                        },
+                    },
+                }
+            }
+        }
+    </script>
     <style>
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111827; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-        /* Estilos para o calendário mensal */
-        .calendar-day.logged { background-color: #2563eb; color: white; border-radius: 50%; font-weight: bold; }
-        .calendar-day.today { border: 2px solid #34d399; }
-        /* Estilos para o calendário anual */
-        .annual-day.logged { background-color: #2563eb; color: white; }
-        .annual-day.today { box-shadow: 0 0 0 2px #34d399; }
-
-        #loading-overlay.fade-out { opacity: 0; transition: opacity 0.5s ease-out; }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .habit-card:hover {
+            transform: translateY(-2px);
+            transition: transform 0.2s ease;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 font-sans">
-
-    <div id="loading-overlay" class="fixed top-0 left-0 w-full h-full bg-gray-900 flex justify-center items-center z-50 px-4">
-        <div class="w-full max-w-md">
-            <h2 class="text-white text-2xl font-bold text-center mb-3"><i class="fa-solid fa-rocket text-blue-400"></i> HabitFlow</h2>
-            <div class="bg-gray-700 rounded-full h-4 overflow-hidden"><div id="progress-bar-inner" class="bg-gradient-to-r from-blue-500 to-teal-400 h-4 rounded-full text-center text-xs text-white flex items-center justify-center transition-all duration-300" style="width: 0%;">0%</div></div>
-            <p id="loading-status" class="text-center text-gray-400 text-sm mt-2">Inicializando...</p>
+<body class="bg-gray-900 text-white min-h-screen flex">
+    <!-- Barra Lateral -->
+    <aside class="w-64 glassmorphism border-r border-white/10 p-4 flex flex-col h-screen sticky top-0">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
+            <p class="text-sm text-white/60">Seu companheiro de hábitos</p>
         </div>
-    </div>
 
-    <div id="log-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
-        <div class="bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md">
-            <h3 id="log-modal-title" class="text-2xl font-bold mb-4 text-white">Registrar Hábito</h3>
-            <form id="log-form">
-                <input type="hidden" id="log-habit-id">
-                <div class="mb-4">
-                    <label for="log-datetime" class="block text-sm font-medium text-gray-300 mb-2">Data e Hora da Realização</label>
-                    <input type="datetime-local" id="log-datetime" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                <div class="mb-6">
-                    <label for="log-notes" class="block text-sm font-medium text-gray-300 mb-2">Anotação do Registro (Opcional)</label>
-                    <textarea id="log-notes" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Como você se sentiu? Algum detalhe?"></textarea>
-                </div>
-                <div class="flex justify-end gap-4">
-                    <button type="button" id="cancel-log-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Cancelar</button>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Salvar Registro</button>
-                </div>
+        <nav class="flex-1">
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="dashboardLink">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="notesLink">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Anotações Gerais
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="mt-auto">
+            <h3 class="text-sm font-semibold text-white/70 mb-2">NOVO HÁBITO</h3>
+            <form id="newHabitForm" class="space-y-2">
+                <input type="text" id="habitName" placeholder="Nome do hábito" class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition">Adicionar</button>
             </form>
         </div>
-    </div>
 
-    <div class="flex">
-        <aside id="sidebar" class="bg-gray-800 text-white w-72 h-screen fixed top-0 left-0 z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out overflow-y-auto">
-            <div class="p-4 border-b border-gray-700"><h1 class="text-2xl font-bold text-center"><i class="fa-solid fa-rocket text-blue-400"></i> HabitFlow</h1></div>
-            <nav id="nav-menu" class="p-4 space-y-2">
-                <button data-target="dashboard" class="nav-button w-full flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200"><i class="fas fa-chart-bar w-6 text-center"></i><span class="ml-4 font-semibold">Visão Geral</span></button>
-                <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Meus Hábitos</div>
-                <div id="habit-buttons-container" class="space-y-1"></div>
-                <div class="p-2 mt-2">
-                    <form id="add-habit-form" class="flex gap-2">
-                        <input type="text" id="new-habit-name" class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Novo hábito..." required>
-                        <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold p-2 rounded-lg transition-colors" aria-label="Adicionar Hábito"><i class="fas fa-plus"></i></button>
-                    </form>
-                </div>
-            </nav>
-        </aside>
+        <div class="mt-4 pt-4 border-t border-white/10">
+            <button id="backupBtn" class="text-sm w-full py-1 px-3 rounded-lg hover:bg-white/10 transition">Backup</button>
+            <button id="restoreBtn" class="text-sm w-full py-1 px-3 rounded-lg hover:bg-white/10 transition">Restaurar</button>
+            <button id="clearDataBtn" class="text-sm w-full py-1 px-3 rounded-lg hover:bg-white/10 transition text-red-400">Limpar Dados</button>
+        </div>
+    </aside>
 
-        <main id="main-content" class="flex-1 md:ml-72 p-4 md:p-8 transition-all duration-300 ease-in-out">
-            <header class="flex justify-between items-center mb-8">
-                <button id="hamburger-button" class="md:hidden text-2xl p-2"><i class="fas fa-bars"></i></button>
-                <h2 id="content-title" class="text-3xl font-bold text-white"></h2>
-            </header>
-
-            <section id="dashboard-content" class="content-section">
-                 <div id="habit-streaks-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6"></div>
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg mt-8">
-                    <h3 class="text-lg font-semibold mb-4">Gerenciamento de Dados</h3>
-                    <div class="flex flex-wrap gap-4">
-                        <button id="download-data-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i class="fas fa-download mr-2"></i>Baixar Backup (JSON)</button>
-                        <button id="upload-data-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i class="fas fa-upload mr-2"></i>Carregar Backup (JSON)</button>
-                        <input type="file" id="upload-input" accept=".json" class="hidden">
-                        <button id="clear-data-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"><i class="fas fa-trash-alt mr-2"></i>Limpar Dados</button>
-                    </div>
-                </div>
-            </section>
-            
-            <div id="habit-pages-container"></div>
-        </main>
-    </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // --- CONFIGURAÇÃO DA APLICAÇÃO ---
-    const DB_NAME = 'habitflow-db-v2';
-    const DB_VERSION = 1;
-    const HABITS_STORE = 'habits';
-    const LOGS_STORE = 'logs';
-    const HABIT_NOTES_STORE = 'habit_notes';
-    let db;
-    let activeStreakIntervals = {};
-
-    // --- ELEMENTOS DO DOM ---
-    const contentTitle = document.getElementById('content-title');
-    const habitButtonsContainer = document.getElementById('habit-buttons-container');
-    const habitPagesContainer = document.getElementById('habit-pages-container');
-    const habitStreaksContainer = document.getElementById('habit-streaks-container');
-
-    // Modal
-    const logModal = document.getElementById('log-modal');
-    const logForm = document.getElementById('log-form');
-    const logModalTitle = document.getElementById('log-modal-title');
-    const logHabitIdInput = document.getElementById('log-habit-id');
-    const logDateTimeInput = document.getElementById('log-datetime');
-    const logNotesInput = document.getElementById('log-notes');
-
-    // --- FUNÇÕES DO BANCO DE DADOS (INDEXEDDB) ---
-    function openDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
-            request.onerror = (event) => reject('Erro ao abrir o IndexedDB.');
-            request.onsuccess = (event) => {
-                db = event.target.result;
-                resolve(db);
-            };
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                if (!db.objectStoreNames.contains(HABITS_STORE)) {
-                    db.createObjectStore(HABITS_STORE, { keyPath: 'id', autoIncrement: true });
-                }
-                if (!db.objectStoreNames.contains(LOGS_STORE)) {
-                    const logsStore = db.createObjectStore(LOGS_STORE, { keyPath: 'id', autoIncrement: true });
-                    logsStore.createIndex('habitId_idx', 'habitId', { unique: false });
-                }
-                if (!db.objectStoreNames.contains(HABIT_NOTES_STORE)) {
-                    const notesStore = db.createObjectStore(HABIT_NOTES_STORE, { keyPath: 'id', autoIncrement: true });
-                    notesStore.createIndex('habitId_idx', 'habitId', { unique: false });
-                }
-            };
-        });
-    }
-
-    // --- LÓGICA DE HÁBITOS ---
-    async function handleAddHabit(event) {
-        event.preventDefault();
-        const input = document.getElementById('new-habit-name');
-        const habitName = input.value.trim();
-        if (!habitName) return;
-
-        const newHabit = { name: habitName, createdAt: new Date() };
-        await addToDB(db.transaction(HABITS_STORE, 'readwrite').objectStore(HABITS_STORE), newHabit);
-        
-        input.value = '';
-        await loadAndDisplayHabits();
-        await updateDashboard();
-    }
-    
-    async function loadAndDisplayHabits() {
-        habitButtonsContainer.innerHTML = '';
-        habitPagesContainer.innerHTML = '';
-        const habits = await getAllFromDB(db.transaction(HABITS_STORE, 'readonly').objectStore(HABITS_STORE));
-        
-        habits.forEach(habit => {
-            const button = document.createElement('button');
-            button.className = 'nav-button w-full flex items-center p-2 pl-6 rounded-lg hover:bg-gray-700 transition-colors duration-200';
-            button.dataset.target = `habit-${habit.id}`;
-            button.innerHTML = `<i class="fa-solid fa-bullseye w-5 text-center"></i><span class="ml-3 font-medium">${habit.name}</span>`;
-            habitButtonsContainer.appendChild(button);
-            createHabitPage(habit);
-        });
-    }
-
-    function createHabitPage(habit) {
-        const section = document.createElement('section');
-        section.id = `habit-${habit.id}-content`;
-        section.className = 'content-section hidden';
-        section.dataset.isAnnualView = 'false'; // Estado da visualização do calendário
-
-        section.innerHTML = `
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg mb-8">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-2xl font-bold text-white">Calendário</h3>
-                    <button data-action="toggle-view" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Ver Visão Anual</button>
-                </div>
-                <div id="calendar-view-container-${habit.id}">
-                    <div id="monthly-view-${habit.id}">
-                         <div class="flex justify-between items-center mb-6">
-                            <button data-action="prev-month" class="calendar-nav-btn text-xl p-2 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700 transition-colors"><i class="fas fa-chevron-left"></i></button>
-                            <h3 id="calendar-title-${habit.id}" class="text-2xl font-bold text-white text-center"></h3>
-                            <button data-action="next-month" class="calendar-nav-btn text-xl p-2 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700 transition-colors"><i class="fas fa-chevron-right"></i></button>
-                        </div>
-                        <div class="grid grid-cols-7 gap-2 text-center font-bold text-sm text-gray-400 py-2">
-                            ${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => `<div>${day}</div>`).join('')}
-                        </div>
-                        <div id="calendar-grid-${habit.id}" class="grid grid-cols-7 gap-2 text-center"></div>
-                    </div>
-                    <div id="annual-view-${habit.id}" class="hidden">
-                        <div class="flex justify-between items-center mb-6">
-                             <button data-action="prev-year" class="calendar-nav-btn text-xl p-2 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700 transition-colors"><i class="fas fa-angle-double-left"></i></button>
-                             <h3 id="annual-title-${habit.id}" class="text-2xl font-bold text-white text-center"></h3>
-                             <button data-action="next-year" class="calendar-nav-btn text-xl p-2 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700 transition-colors"><i class="fas fa-angle-double-right"></i></button>
-                        </div>
-                        <div id="annual-grid-${habit.id}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
-                    </div>
+    <!-- Conteúdo Principal -->
+    <main class="flex-1 p-6">
+        <!-- Dashboard (Visão padrão) -->
+        <div id="dashboardView" class="fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold">Meus Hábitos</h2>
+                <div class="text-sm bg-white/5 px-3 py-1 rounded-full border border-white/10" id="currentStreak">
+                    Sequência: 0d 0h 0m 0s
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
-                    <h3 class="text-xl font-bold text-white mb-4">Anotações do Hábito</h3>
-                    <form data-action="add-note" class="mb-4">
-                        <textarea class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Adicione uma anotação sobre este hábito..." required></textarea>
-                        <button type="submit" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full">Salvar Anotação</button>
-                    </form>
-                    <div id="habit-notes-list-${habit.id}" class="space-y-3 max-h-72 overflow-y-auto pr-2"></div>
+            <div id="habitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Hábitos serão renderizados aqui via JavaScript -->
+                <div class="text-center py-10 text-white/40" id="noHabitsMessage">
+                    Nenhum hábito cadastrado. Adicione seu primeiro hábito usando o formulário na barra lateral.
                 </div>
+            </div>
+        </div>
 
-                <div class="space-y-8">
-                    <div class="bg-gray-800 p-6 rounded-xl shadow-lg text-center">
-                        <h3 class="text-lg font-semibold text-teal-300 mb-2">SEQUÊNCIA ATUAL</h3>
-                        <div id="streak-display-${habit.id}" class="text-4xl font-bold font-mono">0d 0h 0m 0s</div>
-                    </div>
-                     <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
-                         <h3 class="text-lg font-semibold text-white mb-4">Registros Recentes</h3>
-                         <div id="logs-list-${habit.id}" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
-                    </div>
+        <!-- Página de Detalhes do Hábito (Oculto inicialmente) -->
+        <div id="habitDetailView" class="hidden fade-in">
+            <div class="flex items-center mb-6">
+                <button id="backToDashboard" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 id="habitDetailTitle" class="text-xl font-semibold flex items-center">
+                    <span id="habitNameTitle"></span>
+                    <button id="editHabitName" class="ml-2 p-1 rounded-full hover:bg-white/10 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                </h2>
+                <div class="ml-auto text-sm bg-white/5 px-3 py-1 rounded-full border border-white/10" id="habitStreak">
+                    Sequência: 0d 0h 0m 0s
                 </div>
-            </div>`;
-        habitPagesContainer.appendChild(section);
-    }
+            </div>
 
-    // --- LÓGICA DE ANOTAÇÕES DO HÁBITO (CRUD) ---
-    async function handleHabitNoteSubmit(form, habitId) {
-        const textarea = form.querySelector('textarea');
-        const text = textarea.value.trim();
-        if (!text) return;
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Seção do Calendário -->
+                <div class="lg:col-span-2">
+                    <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-medium">Registro de Atividades</h3>
+                            <div class="flex space-x-2">
+                                <button id="monthViewBtn" class="text-sm bg-blue-500 px-3 py-1 rounded-full">Mês</button>
+                                <button id="yearViewBtn" class="text-sm bg-white/5 px-3 py-1 rounded-full hover:bg-white/10 transition">Ano</button>
+                            </div>
+                        </div>
 
-        const note = { habitId, text, timestamp: Date.now() };
-        await addToDB(db.transaction(HABIT_NOTES_STORE, 'readwrite').objectStore(HABIT_NOTES_STORE), note);
-        textarea.value = '';
-        await renderHabitNotes(habitId);
-    }
+                        <!-- Calendário Mensal -->
+                        <div id="monthCalendar" class="fade-in">
+                            <div class="grid grid-cols-7 gap-1 mb-2">
+                                <div class="text-center text-sm text-white/60">Dom</div>
+                                <div class="text-center text-sm text-white/60">Seg</div>
+                                <div class="text-center text-sm text-white/60">Ter</div>
+                                <div class="text-center text-sm text-white/60">Qua</div>
+                                <div class="text-center text-sm text-white/60">Qui</div>
+                                <div class="text-center text-sm text-white/60">Sex</div>
+                                <div class="text-center text-sm text-white/60">Sáb</div>
+                            </div>
+                            <div id="monthDays" class="grid grid-cols-7 gap-1">
+                                <!-- Dias serão renderizados via JavaScript -->
+                            </div>
+                        </div>
 
-    async function renderHabitNotes(habitId) {
-        const listContainer = document.getElementById(`habit-notes-list-${habitId}`);
-        if (!listContainer) return;
-        
-        const tx = db.transaction(HABIT_NOTES_STORE, 'readonly');
-        const index = tx.objectStore(HABIT_NOTES_STORE).index('habitId_idx');
-        const notes = await getAllFromIndexDB(index, habitId);
-        notes.sort((a,b) => b.timestamp - a.timestamp);
+                        <!-- Calendário Anual -->
+                        <div id="yearCalendar" class="hidden fade-in">
+                            <div class="grid grid-cols-4 gap-2">
+                                <!-- Meses serão renderizados via JavaScript -->
+                            </div>
+                        </div>
+                    </div>
 
-        listContainer.innerHTML = notes.length === 0
-            ? '<p class="text-gray-500 text-center">Nenhuma anotação para este hábito.</p>'
-            : notes.map(note => `
-                <div class="bg-gray-700/50 p-3 rounded-lg" id="note-${note.id}">
-                    <p class="text-gray-300 whitespace-pre-wrap">${note.text}</p>
-                    <div class="text-right text-xs text-gray-500 mt-2 flex justify-between items-center">
-                        <span>${new Date(note.timestamp).toLocaleString('pt-BR')}</span>
-                        <div>
-                            <button data-action="edit-note" data-note-id="${note.id}" class="hover:text-blue-400 px-1">Editar</button>
-                            <button data-action="delete-note" data-note-id="${note.id}" class="hover:text-red-400 px-1">Excluir</button>
+                    <!-- Logs Recentes -->
+                    <div class="glassmorphism border border-white/10 rounded-2xl p-4">
+                        <h3 class="font-medium mb-4">Logs Recentes</h3>
+                        <div id="recentLogs" class="space-y-2">
+                            <!-- Logs serão renderizados aqui via JavaScript -->
+                            <p class="text-sm text-white/40 text-center py-4">Nenhum registro encontrado</p>
                         </div>
                     </div>
                 </div>
-            `).join('');
-    }
 
-    async function handleNoteEdit(noteId, habitId) {
-        const note = await getFromDB(db.transaction(HABIT_NOTES_STORE, 'readonly').objectStore(HABIT_NOTES_STORE), noteId);
-        const newText = prompt("Edite sua anotação:", note.text);
-        if (newText && newText.trim() !== note.text) {
-            note.text = newText.trim();
-            await updateInDB(db.transaction(HABIT_NOTES_STORE, 'readwrite').objectStore(HABIT_NOTES_STORE), note);
-            await renderHabitNotes(habitId);
-        }
-    }
+                <!-- Seção de Anotações -->
+                <div>
+                    <div class="glassmorphism border border-white/10 rounded-2xl p-4 h-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-medium">Anotações</h3>
+                            <button id="addNoteBtn" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full transition">+ Nova</button>
+                        </div>
+                        <div id="habitNotes" class="space-y-3">
+                            <!-- Anotações serão renderizadas aqui via JavaScript -->
+                            <p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    async function handleNoteDelete(noteId, habitId) {
-        if (confirm("Tem certeza que deseja excluir esta anotação?")) {
-            await deleteFromDB(db.transaction(HABIT_NOTES_STORE, 'readwrite').objectStore(HABIT_NOTES_STORE), noteId);
-            await renderHabitNotes(habitId);
-        }
-    }
+        <!-- Página de Anotações Gerais (Oculto inicialmente) -->
+        <div id="generalNotesView" class="hidden fade-in">
+            <div class="flex items-center mb-6">
+                <button id="backFromNotes" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 class="text-xl font-semibold">Anotações Gerais</h2>
+            </div>
 
+            <div class="glassmorphism border border-white/10 rounded-2xl p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-medium">Todas as Anotações</h3>
+                    <button id="addGeneralNoteBtn" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full transition">+ Nova</button>
+                </div>
+                <div id="generalNotesList" class="space-y-3">
+                    <!-- Anotações gerais serão renderizadas aqui via JavaScript -->
+                    <p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>
+                </div>
+            </div>
+        </div>
+    </main>
 
-    // --- LÓGICA DE CÁLCULO DE SEQUÊNCIA (STREAK) ---
-    function stopAllStreakIntervals() {
-        Object.values(activeStreakIntervals).forEach(clearInterval);
-        activeStreakIntervals = {};
-    }
+    <!-- Modal Universal -->
+    <div id="universalModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
+            <h3 id="modalTitle" class="text-lg font-semibold mb-4">Editar</h3>
+            <textarea id="modalInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4" rows="4"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button id="modalCancel" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Cancelar</button>
+                <button id="modalConfirm" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
 
-    function startStreakInterval(habitId, firstLogTime) {
-        if (activeStreakIntervals[habitId]) {
-            clearInterval(activeStreakIntervals[habitId]);
-        }
-        
-        const update = () => {
-            const duration = Date.now() - firstLogTime;
-            const days = Math.floor(duration / 86400000); // 1000 * 60 * 60 * 24
-            const hours = Math.floor((duration % 86400000) / 3600000); // 1000 * 60 * 60
-            const minutes = Math.floor((duration % 3600000) / 60000); // 1000 * 60
-            const seconds = Math.floor((duration % 60000) / 1000);
-            
-            const text = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            
-            const streakDisplayPage = document.getElementById(`streak-display-${habitId}`);
-            const streakDisplayDash = document.getElementById(`dashboard-streak-${habitId}`);
+    <!-- Modal de Registro -->
+    <div id="logModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
+            <h3 id="logModalTitle" class="text-lg font-semibold mb-4">Registrar Atividade</h3>
+            <div class="mb-4">
+                <label class="block text-sm text-white/70 mb-1">Data</label>
+                <input type="date" id="logDate" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm text-white/70 mb-1">Hora</label>
+                <input type="time" id="logTime" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button id="logModalCancel" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Cancelar</button>
+                <button id="logModalConfirm" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Registrar</button>
+                <button id="logModalDelete" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition hidden">Excluir</button>
+            </div>
+        </div>
+    </div>
 
-            if(streakDisplayPage) streakDisplayPage.textContent = text;
-            if(streakDisplayDash) streakDisplayDash.textContent = text;
+    <!-- Modal de Backup/Restauração -->
+    <div id="dataModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
+            <h3 id="dataModalTitle" class="text-lg font-semibold mb-4">Backup de Dados</h3>
+            <div id="backupContent" class="mb-4">
+                <p class="text-sm text-white/70 mb-2">Copie o texto abaixo para fazer backup dos seus dados:</p>
+                <textarea id="backupData" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-2" rows="6" readonly></textarea>
+                <button id="copyBackupBtn" class="w-full py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Copiar para Área de Transferência</button>
+            </div>
+            <div id="restoreContent" class="mb-4 hidden">
+                <p class="text-sm text-white/70 mb-2">Cole seus dados de backup abaixo:</p>
+                <textarea id="restoreData" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-2" rows="6"></textarea>
+                <button id="confirmRestoreBtn" class="w-full py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Restaurar Dados</button>
+            </div>
+            <div class="flex justify-end">
+                <button id="dataModalClose" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+        <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
+            <h3 id="confirmModalTitle" class="text-lg font-semibold mb-4">Confirmação</h3>
+            <p id="confirmModalMessage" class="mb-6">Tem certeza que deseja realizar esta ação?</p>
+            <div class="flex justify-end space-x-2">
+                <button id="confirmModalCancel" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Cancelar</button>
+                <button id="confirmModalConfirm" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        const state = {
+            currentView: 'dashboard', // 'dashboard', 'habitDetail', 'generalNotes'
+            currentHabitId: null,
+            editingNoteId: null,
+            editingLogId: null,
+            calendarView: 'month', // 'month' ou 'year'
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear(),
+            modalContext: null, // 'habitName', 'habitNote', 'generalNote'
+            dataModalContext: null // 'backup', 'restore'
         };
 
-        update(); // Primeira chamada imediata
-        activeStreakIntervals[habitId] = setInterval(update, 1000);
-    }
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Carregar dados do localStorage
+            loadData();
 
-    async function calculateAndDisplayStreak(habitId) {
-        const tx = db.transaction(LOGS_STORE, 'readonly');
-        const index = tx.objectStore(LOGS_STORE).index('habitId_idx');
-        const logs = await getAllFromIndexDB(index, habitId);
-        
-        const streakDisplayPage = document.getElementById(`streak-display-${habitId}`);
-        const streakDisplayDash = document.getElementById(`dashboard-streak-${habitId}`);
+            // Configurar event listeners
+            setupEventListeners();
 
-        function setStreakText(text) {
-            if(streakDisplayPage) streakDisplayPage.textContent = text;
-            if(streakDisplayDash) streakDisplayDash.textContent = text;
-            if (activeStreakIntervals[habitId]) {
-                 clearInterval(activeStreakIntervals[habitId]);
-                 delete activeStreakIntervals[habitId];
+            // Atualizar a UI inicial
+            updateUI();
+
+            // Iniciar o contador de sequência
+            startStreakCounter();
+        });
+
+        // Estrutura de dados
+        let appData = {
+            habits: [],
+            generalNotes: [],
+            lastActivity: null
+        };
+
+        // Carregar dados do localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('habitFlowData');
+            if (savedData) {
+                appData = JSON.parse(savedData);
             }
         }
 
-        if (logs.length === 0) {
-            setStreakText("Nenhum registro");
-            return;
-        }
-        
-        logs.sort((a, b) => b.timestamp - a.timestamp);
-
-        if (Date.now() - logs[0].timestamp > 24 * 60 * 60 * 1000) {
-            setStreakText("Sequência quebrada");
-            return;
+        // Salvar dados no localStorage
+        function saveData() {
+            localStorage.setItem('habitFlowData', JSON.stringify(appData));
+            updateUI();
         }
 
-        let firstLogTime = logs[0].timestamp;
-        for (let i = 0; i < logs.length - 1; i++) {
-            if (logs[i].timestamp - logs[i+1].timestamp > 24 * 60 * 60 * 1000) {
-                break;
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Navegação
+            document.getElementById('logoTitle').addEventListener('click', () => showDashboard());
+            document.getElementById('dashboardLink').addEventListener('click', () => showDashboard());
+            document.getElementById('notesLink').addEventListener('click', () => showGeneralNotes());
+            document.getElementById('backToDashboard').addEventListener('click', () => showDashboard());
+            document.getElementById('backFromNotes').addEventListener('click', () => showDashboard());
+
+            // Formulário de novo hábito
+            document.getElementById('newHabitForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const habitName = document.getElementById('habitName').value.trim();
+                if (habitName) {
+                    addHabit(habitName);
+                    document.getElementById('habitName').value = '';
+                }
+            });
+
+            // Botões do calendário
+            document.getElementById('monthViewBtn').addEventListener('click', () => {
+                state.calendarView = 'month';
+                updateCalendar();
+            });
+            document.getElementById('yearViewBtn').addEventListener('click', () => {
+                state.calendarView = 'year';
+                updateCalendar();
+            });
+
+            // Modal universal
+            document.getElementById('modalCancel').addEventListener('click', () => {
+                document.getElementById('universalModal').classList.add('hidden');
+            });
+            document.getElementById('modalConfirm').addEventListener('click', () => {
+                handleModalConfirm();
+            });
+
+            // Modal de registro
+            document.getElementById('logModalCancel').addEventListener('click', () => {
+                document.getElementById('logModal').classList.add('hidden');
+            });
+            document.getElementById('logModalConfirm').addEventListener('click', () => {
+                handleLogModalConfirm();
+            });
+            document.getElementById('logModalDelete').addEventListener('click', () => {
+                handleLogModalDelete();
+            });
+
+            // Modal de dados
+            document.getElementById('dataModalClose').addEventListener('click', () => {
+                document.getElementById('dataModal').classList.add('hidden');
+            });
+            document.getElementById('copyBackupBtn').addEventListener('click', () => {
+                copyToClipboard('backupData');
+            });
+            document.getElementById('confirmRestoreBtn').addEventListener('click', () => {
+                restoreData();
+            });
+
+            // Modal de confirmação
+            document.getElementById('confirmModalCancel').addEventListener('click', () => {
+                document.getElementById('confirmModal').classList.add('hidden');
+            });
+            document.getElementById('confirmModalConfirm').addEventListener('click', () => {
+                handleConfirmModalConfirm();
+            });
+
+            // Botões de gerenciamento de dados
+            document.getElementById('backupBtn').addEventListener('click', () => {
+                showBackupModal();
+            });
+            document.getElementById('restoreBtn').addEventListener('click', () => {
+                showRestoreModal();
+            });
+            document.getElementById('clearDataBtn').addEventListener('click', () => {
+                showConfirmModal('Limpar todos os dados', 'Tem certeza que deseja apagar todos os hábitos e anotações? Esta ação não pode ser desfeita.', 'clearData');
+            });
+        }
+
+        // Funções de navegação
+        function showDashboard() {
+            state.currentView = 'dashboard';
+            updateUI();
+        }
+
+        function showHabitDetail(habitId) {
+            state.currentView = 'habitDetail';
+            state.currentHabitId = habitId;
+            updateUI();
+        }
+
+        function showGeneralNotes() {
+            state.currentView = 'generalNotes';
+            updateUI();
+        }
+
+        // Funções de atualização da UI
+        function updateUI() {
+            // Esconder todas as views
+            document.getElementById('dashboardView').classList.add('hidden');
+            document.getElementById('habitDetailView').classList.add('hidden');
+            document.getElementById('generalNotesView').classList.add('hidden');
+
+            // Mostrar a view correta
+            if (state.currentView === 'dashboard') {
+                document.getElementById('dashboardView').classList.remove('hidden');
+                renderHabits();
+            } else if (state.currentView === 'habitDetail') {
+                document.getElementById('habitDetailView').classList.remove('hidden');
+                renderHabitDetail();
+            } else if (state.currentView === 'generalNotes') {
+                document.getElementById('generalNotesView').classList.remove('hidden');
+                renderGeneralNotes();
             }
-            firstLogTime = logs[i+1].timestamp;
+
+            // Atualizar o contador de sequência
+            updateStreakCounter();
         }
-        startStreakInterval(habitId, firstLogTime);
-    }
 
-    // --- LÓGICA DE REGISTRO (LOG) E MODAL ---
-    function openLogModal(habitId, dateStr) {
-        const habitName = document.querySelector(`.nav-button[data-target='habit-${habitId}'] span`).textContent;
-        logModalTitle.textContent = `Registrar "${habitName}"`;
-        logHabitIdInput.value = habitId;
+        function renderHabits() {
+            const container = document.getElementById('habitsContainer');
+            const noHabitsMessage = document.getElementById('noHabitsMessage');
 
-        const now = new Date();
-        const date = new Date(dateStr);
-        // Mantém a hora atual, mas no dia selecionado
-        date.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+            if (appData.habits.length === 0) {
+                noHabitsMessage.classList.remove('hidden');
+                container.innerHTML = '';
+                container.appendChild(noHabitsMessage);
+                return;
+            }
 
-        const timezoneOffset = date.getTimezoneOffset() * 60000;
-        const localISOTime = new Date(date - timezoneOffset).toISOString().slice(0, 16);
-        
-        logDateTimeInput.value = localISOTime;
-        logNotesInput.value = '';
-        logModal.classList.remove('hidden');
-    }
+            noHabitsMessage.classList.add('hidden');
+            container.innerHTML = '';
 
-    function closeLogModal() {
-        logModal.classList.add('hidden');
-    }
-
-    async function handleLogSubmit(event) {
-        event.preventDefault();
-        const habitId = parseInt(logHabitIdInput.value);
-        const timestamp = new Date(logDateTimeInput.value).getTime();
-        const notes = logNotesInput.value.trim();
-
-        const newLog = { habitId, timestamp, notes };
-        await addToDB(db.transaction(LOGS_STORE, 'readwrite').objectStore(LOGS_STORE), newLog);
-        
-        closeLogModal();
-        await updateHabitPage(habitId, new Date(timestamp));
-        await updateDashboard();
-    }
-    
-    async function handleLogDelete(logId, habitId) {
-        if(confirm("Tem certeza que deseja excluir este registro?")) {
-            const log = await getFromDB(db.transaction(LOGS_STORE, 'readonly').objectStore(LOGS_STORE), logId);
-            await deleteFromDB(db.transaction(LOGS_STORE, 'readwrite').objectStore(LOGS_STORE), logId);
-            await updateHabitPage(habitId, new Date(log.timestamp));
-            await updateDashboard();
+            appData.habits.forEach(habit => {
+                const habitCard = document.createElement('div');
+                habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card cursor-pointer hover:border-white/20 transition';
+                habitCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-medium">${habit.name}</h3>
+                        <div class="text-xs bg-white/5 px-2 py-1 rounded-full">${formatStreak(calculateHabitStreak(habit.id))}</div>
+                    </div>
+                    <div class="mt-2 text-sm text-white/60">
+                        ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
+                    </div>
+                `;
+                habitCard.addEventListener('click', () => showHabitDetail(habit.id));
+                container.appendChild(habitCard);
+            });
         }
-    }
 
-    // --- LÓGICA DE CALENDÁRIO (MENSAL E ANUAL) ---
-    async function renderCalendar(habitId, date, isAnnual) {
-        const monthlyView = document.getElementById(`monthly-view-${habitId}`);
-        const annualView = document.getElementById(`annual-view-${habitId}`);
-        if (!monthlyView || !annualView) return;
+        function renderHabitDetail() {
+            const habit = appData.habits.find(h => h.id === state.currentHabitId);
+            if (!habit) {
+                showDashboard();
+                return;
+            }
 
-        const allLogs = await getAllFromIndexDB(db.transaction(LOGS_STORE, 'readonly').objectStore(LOGS_STORE).index('habitId_idx'), habitId);
-        const loggedDates = new Set(allLogs.map(log => new Date(log.timestamp).toDateString()));
-        const todayString = new Date().toDateString();
-
-        if (isAnnual) {
-            monthlyView.classList.add('hidden');
-            annualView.classList.remove('hidden');
-            document.querySelector(`#habit-${habitId}-content [data-action='toggle-view']`).textContent = "Ver Visão Mensal";
-            renderAnnualView(habitId, date.getFullYear(), loggedDates, todayString);
-        } else {
-            annualView.classList.add('hidden');
-            monthlyView.classList.remove('hidden');
-            document.querySelector(`#habit-${habitId}-content [data-action='toggle-view']`).textContent = "Ver Visão Anual";
-            renderMonthlyView(habitId, date, loggedDates, todayString);
-        }
-    }
-
-    function renderMonthlyView(habitId, date, loggedDates, todayString) {
-        const calendarGrid = document.getElementById(`calendar-grid-${habitId}`);
-        const calendarTitle = document.getElementById(`calendar-title-${habitId}`);
-        
-        const month = date.getMonth();
-        const year = date.getFullYear();
-        calendarTitle.textContent = date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase());
-        
-        calendarGrid.innerHTML = '';
-        const firstDayOfMonth = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        for (let i = 0; i < firstDayOfMonth; i++) calendarGrid.innerHTML += '<div></div>';
-        
-        for (let day = 1; day <= daysInMonth; day++) {
-            const currentDate = new Date(year, month, day);
-            const dateString = currentDate.toDateString();
-            const dateForAttr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            // Atualizar título
+            document.getElementById('habitNameTitle').textContent = habit.name;
             
-            let classes = 'calendar-day h-10 w-10 flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-gray-700';
-            if (loggedDates.has(dateString)) classes += ' logged';
-            if (dateString === todayString) classes += ' today';
+            // Configurar botão de edição do nome
+            document.getElementById('editHabitName').addEventListener('click', () => {
+                showEditModal('Editar nome do hábito', habit.name, 'habitName');
+            });
 
-            calendarGrid.innerHTML += `<div class="${classes}" data-date="${dateForAttr}">${day}</div>`;
+            // Atualizar contador de sequência do hábito
+            document.getElementById('habitStreak').textContent = `Sequência: ${formatStreak(calculateHabitStreak(habit.id))}`;
+
+            // Atualizar calendário
+            updateCalendar();
+
+            // Atualizar logs recentes
+            renderRecentLogs();
+
+            // Atualizar anotações do hábito
+            renderHabitNotes();
         }
-    }
 
-    function renderAnnualView(habitId, year, loggedDates, todayString) {
-        const annualGrid = document.getElementById(`annual-grid-${habitId}`);
-        document.getElementById(`annual-title-${habitId}`).textContent = `Ano de ${year}`;
-        annualGrid.innerHTML = '';
+        function updateCalendar() {
+            if (state.calendarView === 'month') {
+                document.getElementById('monthCalendar').classList.remove('hidden');
+                document.getElementById('yearCalendar').classList.add('hidden');
+                document.getElementById('monthViewBtn').classList.add('bg-blue-500');
+                document.getElementById('monthViewBtn').classList.remove('bg-white/5');
+                document.getElementById('yearViewBtn').classList.remove('bg-blue-500');
+                document.getElementById('yearViewBtn').classList.add('bg-white/5');
+                renderMonthCalendar();
+            } else {
+                document.getElementById('monthCalendar').classList.add('hidden');
+                document.getElementById('yearCalendar').classList.remove('hidden');
+                document.getElementById('monthViewBtn').classList.remove('bg-blue-500');
+                document.getElementById('monthViewBtn').classList.add('bg-white/5');
+                document.getElementById('yearViewBtn').classList.add('bg-blue-500');
+                document.getElementById('yearViewBtn').classList.remove('bg-white/5');
+                renderYearCalendar();
+            }
+        }
 
-        for (let month = 0; month < 12; month++) {
-            const monthName = new Date(year, month).toLocaleString('pt-BR', { month: 'long' });
-            let monthHTML = `<div class="bg-gray-700/50 p-3 rounded-lg"><h4 class="font-bold text-center mb-2">${monthName.replace(/^\w/, c => c.toUpperCase())}</h4>`;
-            monthHTML += `<div class="grid grid-cols-7 gap-1 text-center text-xs">`;
-            ['D','S','T','Q','Q','S','S'].forEach(d => { monthHTML += `<div class="font-semibold text-gray-500">${d}</div>`; });
-            
-            const firstDayOfMonth = new Date(year, month, 1).getDay();
-            for (let i = 0; i < firstDayOfMonth; i++) monthHTML += '<div></div>';
+        function renderMonthCalendar() {
+            const monthDaysContainer = document.getElementById('monthDays');
+            monthDaysContainer.innerHTML = '';
 
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const habit = appData.habits.find(h => h.id === state.currentHabitId);
+            if (!habit) return;
+
+            const firstDay = new Date(state.currentYear, state.currentMonth, 1);
+            const lastDay = new Date(state.currentYear, state.currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDay = firstDay.getDay();
+
+            // Dias vazios no início
+            for (let i = 0; i < startingDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'h-8';
+                monthDaysContainer.appendChild(emptyDay);
+            }
+
+            // Dias do mês
             for (let day = 1; day <= daysInMonth; day++) {
-                const currentDate = new Date(year, month, day);
-                const dateString = currentDate.toDateString();
-                const dateForAttr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const date = new Date(state.currentYear, state.currentMonth, day);
+                const dateStr = formatDate(date);
                 
-                let classes = 'annual-day h-6 w-6 flex items-center justify-center rounded-full cursor-pointer transition-colors hover:bg-gray-600';
-                if (loggedDates.has(dateString)) classes += ' logged';
-                if (dateString === todayString) classes += ' today';
-                monthHTML += `<div class="${classes}" data-date="${dateForAttr}">${day}</div>`;
+                const dayElement = document.createElement('div');
+                dayElement.className = 'h-8 flex items-center justify-center rounded-full cursor-pointer hover:bg-white/10 transition';
+                
+                // Verificar se há logs para este dia
+                const hasLog = habit.logs && habit.logs.some(log => log.date.startsWith(dateStr));
+                if (hasLog) {
+                    dayElement.classList.add('bg-blue-500/30');
+                }
+                
+                dayElement.textContent = day;
+                dayElement.addEventListener('click', () => showLogModal(date));
+                monthDaysContainer.appendChild(dayElement);
+            }
+        }
+
+        function renderYearCalendar() {
+            const yearContainer = document.getElementById('yearCalendar');
+            yearContainer.innerHTML = '';
+
+            const habit = appData.habits.find(h => h.id === state.currentHabitId);
+            if (!habit) return;
+
+            for (let month = 0; month < 12; month++) {
+                const monthElement = document.createElement('div');
+                monthElement.className = 'glassmorphism border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition';
+                
+                const monthName = document.createElement('div');
+                monthName.className = 'text-center font-medium mb-1';
+                monthName.textContent = new Date(state.currentYear, month, 1).toLocaleString('default', { month: 'short' });
+                monthElement.appendChild(monthName);
+                
+                const daysContainer = document.createElement('div');
+                daysContainer.className = 'grid grid-cols-7 gap-1';
+                
+                // Verificar se há logs neste mês
+                const monthHasLogs = habit.logs && habit.logs.some(log => {
+                    const logDate = new Date(log.date);
+                    return logDate.getFullYear() === state.currentYear && logDate.getMonth() === month;
+                });
+                
+                if (monthHasLogs) {
+                    monthElement.classList.add('border-blue-500/50');
+                }
+                
+                monthElement.addEventListener('click', () => {
+                    state.currentMonth = month;
+                    state.calendarView = 'month';
+                    updateCalendar();
+                });
+                
+                yearContainer.appendChild(monthElement);
+            }
+        }
+
+        function renderRecentLogs() {
+            const container = document.getElementById('recentLogs');
+            container.innerHTML = '';
+
+            const habit = appData.habits.find(h => h.id === state.currentHabitId);
+            if (!habit || !habit.logs || habit.logs.length === 0) {
+                container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhum registro encontrado</p>';
+                return;
             }
 
-            monthHTML += `</div></div>`;
-            annualGrid.innerHTML += monthHTML;
+            // Ordenar logs por data (mais recente primeiro)
+            const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            // Mostrar apenas os 5 mais recentes
+            const recentLogs = sortedLogs.slice(0, 5);
+
+            recentLogs.forEach(log => {
+                const logElement = document.createElement('div');
+                logElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 flex justify-between items-center';
+                
+                const logDate = new Date(log.date);
+                const dateStr = logDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+                const timeStr = logDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                
+                logElement.innerHTML = `
+                    <div>
+                        <span class="text-sm">${dateStr}</span>
+                        <span class="text-xs text-white/60 ml-2">${timeStr}</span>
+                    </div>
+                    <button class="text-xs text-red-400 hover:text-red-300 transition" data-log-id="${log.id}">
+                        Excluir
+                    </button>
+                `;
+                
+                logElement.querySelector('button').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showConfirmModal('Excluir registro', 'Tem certeza que deseja excluir este registro?', 'deleteLog', log.id);
+                });
+                
+                logElement.addEventListener('click', () => {
+                    showLogModal(new Date(log.date), log.id);
+                });
+                
+                container.appendChild(logElement);
+            });
         }
-    }
 
-    // --- ATUALIZAÇÕES DE UI ---
-    async function updateDashboard() {
-        stopAllStreakIntervals();
-        habitStreaksContainer.innerHTML = '';
-        const habits = await getAllFromDB(db.transaction(HABITS_STORE, 'readonly').objectStore(HABITS_STORE));
+        function renderHabitNotes() {
+            const container = document.getElementById('habitNotes');
+            container.innerHTML = '';
 
-        if (habits.length === 0) {
-            habitStreaksContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 p-8">Crie seu primeiro hábito na barra lateral para começar!</div>';
-            return;
-        }
-        
-        for (const habit of habits) {
-            const card = document.createElement('div');
-            card.className = 'bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col justify-between';
-            card.innerHTML = `
-                <div>
-                    <h3 class="font-bold text-xl text-white mb-2">${habit.name}</h3>
-                    <p id="dashboard-streak-${habit.id}" class="text-3xl font-bold text-teal-400 font-mono">Calculando...</p>
-                </div>
-                <button data-target="habit-${habit.id}" class="nav-button mt-4 text-left font-semibold text-blue-400 hover:text-blue-300">Ver detalhes →</button>
-            `;
-            habitStreaksContainer.appendChild(card);
-            calculateAndDisplayStreak(habit.id);
-        }
-    }
-    
-    async function updateHabitPage(habitId, calendarDate) {
-        const habitPage = document.getElementById(`habit-${habitId}-content`);
-        const isAnnual = habitPage.dataset.isAnnualView === 'true';
-        
-        await renderCalendar(habitId, calendarDate, isAnnual);
-        await calculateAndDisplayStreak(habitId);
-        await renderHabitNotes(habitId);
+            const habit = appData.habits.find(h => h.id === state.currentHabitId);
+            if (!habit) return;
 
-        // Atualizar lista de logs
-        const logsListContainer = document.getElementById(`logs-list-${habitId}`);
-        if (logsListContainer) {
-            const tx = db.transaction(LOGS_STORE, 'readonly');
-            const index = tx.objectStore(LOGS_STORE).index('habitId_idx');
-            const logs = await getAllFromIndexDB(index, habitId);
-            logs.sort((a,b) => b.timestamp - a.timestamp); 
+            // Configurar botão de adicionar anotação
+            document.getElementById('addNoteBtn').addEventListener('click', () => {
+                showEditModal('Nova anotação', '', 'habitNote');
+            });
 
-            logsListContainer.innerHTML = logs.length === 0
-                ? '<p class="text-gray-500 text-center">Nenhum registro ainda.</p>'
-                : logs.slice(0, 20).map(log => `
-                    <div class="bg-gray-700/50 p-3 rounded-lg text-sm">
-                        <p class="text-gray-300">${log.notes || '<i>Sem anotação.</i>'}</p>
-                        <div class="text-right text-xs text-gray-500 mt-2 flex justify-between">
-                           <span>${new Date(log.timestamp).toLocaleString('pt-BR')}</span>
-                           <button data-action="delete-log" data-log-id="${log.id}" class="hover:text-red-400">Excluir</button>
+            if (!habit.notes || habit.notes.length === 0) {
+                container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>';
+                return;
+            }
+
+            habit.notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'glassmorphism border border-white/10 rounded-lg p-3';
+                
+                noteElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs text-white/60">${new Date(note.createdAt).toLocaleDateString('pt-BR')}</span>
+                        <div class="flex space-x-2">
+                            <button class="text-xs hover:text-blue-400 transition" data-note-id="${note.id}">
+                                Editar
+                            </button>
+                            <button class="text-xs hover:text-red-400 transition" data-note-id="${note.id}">
+                                Excluir
+                            </button>
                         </div>
                     </div>
-                `).join('');
+                    <p class="text-sm whitespace-pre-line">${note.content}</p>
+                `;
+                
+                noteElement.querySelectorAll('button')[0].addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const noteId = e.target.getAttribute('data-note-id');
+                    const noteToEdit = habit.notes.find(n => n.id === noteId);
+                    if (noteToEdit) {
+                        showEditModal('Editar anotação', noteToEdit.content, 'habitNote', noteId);
+                    }
+                });
+                
+                noteElement.querySelectorAll('button')[1].addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const noteId = e.target.getAttribute('data-note-id');
+                    showConfirmModal('Excluir anotação', 'Tem certeza que deseja excluir esta anotação?', 'deleteHabitNote', noteId);
+                });
+                
+                container.appendChild(noteElement);
+            });
         }
-    }
-    
-    // --- GERENCIAMENTO DE DADOS ---
-    function setupDataManagementListeners() {
-        document.getElementById('download-data-btn').addEventListener('click', async () => {
-            try {
-                const tx = db.transaction([HABITS_STORE, LOGS_STORE, HABIT_NOTES_STORE], 'readonly');
-                const [habits, logs, habit_notes] = await Promise.all([
-                    getAllFromDB(tx.objectStore(HABITS_STORE)),
-                    getAllFromDB(tx.objectStore(LOGS_STORE)),
-                    getAllFromDB(tx.objectStore(HABIT_NOTES_STORE))
-                ]);
-                await tx.done;
 
-                const backupData = { habits, logs, habit_notes };
-                const dataStr = JSON.stringify(backupData, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = `habitflow-backup-${new Date().toISOString().slice(0,10)}.json`;
-                a.click(); a.remove(); URL.revokeObjectURL(a.href);
-                alert('Backup realizado com sucesso!');
-            } catch (error) {
-                console.error('Erro ao criar backup:', error);
-                alert('Ocorreu um erro ao criar o backup.');
+        function renderGeneralNotes() {
+            const container = document.getElementById('generalNotesList');
+            container.innerHTML = '';
+
+            // Configurar botão de adicionar anotação geral
+            document.getElementById('addGeneralNoteBtn').addEventListener('click', () => {
+                showEditModal('Nova anotação geral', '', 'generalNote');
+            });
+
+            if (appData.generalNotes.length === 0) {
+                container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>';
+                return;
             }
-        });
 
-        const uploadBtn = document.getElementById('upload-data-btn');
-        const uploadInput = document.getElementById('upload-input');
-        uploadBtn.addEventListener('click', () => uploadInput.click());
-        uploadInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    if (!data.habits || !data.logs) {
-                        throw new Error('Arquivo de backup inválido.');
+            appData.generalNotes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 mb-3';
+                
+                noteElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs text-white/60">${new Date(note.createdAt).toLocaleDateString('pt-BR')}</span>
+                        <div class="flex space-x-2">
+                            <button class="text-xs hover:text-blue-400 transition" data-note-id="${note.id}">
+                                Editar
+                            </button>
+                            <button class="text-xs hover:text-red-400 transition" data-note-id="${note.id}">
+                                Excluir
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-sm whitespace-pre-line">${note.content}</p>
+                `;
+                
+                noteElement.querySelectorAll('button')[0].addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const noteId = e.target.getAttribute('data-note-id');
+                    const noteToEdit = appData.generalNotes.find(n => n.id === noteId);
+                    if (noteToEdit) {
+                        showEditModal('Editar anotação geral', noteToEdit.content, 'generalNote', noteId);
                     }
-                    if (!confirm('Isso irá apagar todos os dados atuais. Deseja continuar?')) return;
-                    
-                    const storesToRestore = [
-                        { name: HABITS_STORE, data: data.habits || [] },
-                        { name: LOGS_STORE, data: data.logs || [] },
-                        { name: HABIT_NOTES_STORE, data: data.habit_notes || [] }
-                    ];
+                });
+                
+                noteElement.querySelectorAll('button')[1].addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const noteId = e.target.getAttribute('data-note-id');
+                    showConfirmModal('Excluir anotação geral', 'Tem certeza que deseja excluir esta anotação?', 'deleteGeneralNote', noteId);
+                });
+                
+                container.appendChild(noteElement);
+            });
+        }
 
-                    for(const storeInfo of storesToRestore) {
-                        if(db.objectStoreNames.contains(storeInfo.name)){
-                            const tx = db.transaction(storeInfo.name, 'readwrite');
-                            const store = tx.objectStore(storeInfo.name);
-                            await clearDBStore(store);
-                            for(const item of storeInfo.data) { await addToDB(store, item); }
-                            await tx.done;
-                        }
-                    }
-                    alert('Dados importados com sucesso! A página será recarregada.');
-                    location.reload();
-                } catch (error) { alert(`Erro ao processar o arquivo: ${error.message}`); }
+        // Funções de CRUD para hábitos
+        function addHabit(name) {
+            const newHabit = {
+                id: generateId(),
+                name: name,
+                createdAt: new Date().toISOString(),
+                logs: [],
+                notes: []
             };
-            reader.readAsText(file);
-        });
+            
+            appData.habits.push(newHabit);
+            saveData();
+        }
 
-        document.getElementById('clear-data-btn').addEventListener('click', async () => {
-            if (!confirm("Você tem CERTEZA que deseja apagar TODOS os dados? Esta ação é irreversível.")) return;
+        function updateHabitName(habitId, newName) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            if (habit) {
+                habit.name = newName;
+                saveData();
+            }
+        }
+
+        function deleteHabit(habitId) {
+            appData.habits = appData.habits.filter(h => h.id !== habitId);
+            saveData();
+            if (state.currentView === 'habitDetail' && state.currentHabitId === habitId) {
+                showDashboard();
+            }
+        }
+
+        // Funções de CRUD para logs
+        function addLog(habitId, dateTime, logId = null) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            if (!habit) return;
+
+            if (logId) {
+                // Atualizar log existente
+                const logIndex = habit.logs.findIndex(l => l.id === logId);
+                if (logIndex !== -1) {
+                    habit.logs[logIndex].date = dateTime.toISOString();
+                }
+            } else {
+                // Adicionar novo log
+                const newLog = {
+                    id: generateId(),
+                    date: dateTime.toISOString()
+                };
+                habit.logs.push(newLog);
+            }
+
+            // Atualizar última atividade
+            appData.lastActivity = new Date().toISOString();
+            
+            saveData();
+            renderRecentLogs();
+            updateCalendar();
+            updateStreakCounter();
+        }
+
+        function deleteLog(habitId, logId) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            if (habit) {
+                habit.logs = habit.logs.filter(l => l.id !== logId);
+                saveData();
+                renderRecentLogs();
+                updateCalendar();
+                updateStreakCounter();
+            }
+        }
+
+        // Funções de CRUD para anotações
+        function addHabitNote(habitId, content, noteId = null) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            if (!habit) return;
+
+            if (noteId) {
+                // Atualizar anotação existente
+                const noteIndex = habit.notes.findIndex(n => n.id === noteId);
+                if (noteIndex !== -1) {
+                    habit.notes[noteIndex].content = content;
+                    habit.notes[noteIndex].updatedAt = new Date().toISOString();
+                }
+            } else {
+                // Adicionar nova anotação
+                const newNote = {
+                    id: generateId(),
+                    content: content,
+                    createdAt: new Date().toISOString()
+                };
+                habit.notes.push(newNote);
+            }
+            
+            saveData();
+            renderHabitNotes();
+        }
+
+        function deleteHabitNote(habitId, noteId) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            if (habit) {
+                habit.notes = habit.notes.filter(n => n.id !== noteId);
+                saveData();
+                renderHabitNotes();
+            }
+        }
+
+        function addGeneralNote(content, noteId = null) {
+            if (noteId) {
+                // Atualizar anotação existente
+                const noteIndex = appData.generalNotes.findIndex(n => n.id === noteId);
+                if (noteIndex !== -1) {
+                    appData.generalNotes[noteIndex].content = content;
+                    appData.generalNotes[noteIndex].updatedAt = new Date().toISOString();
+                }
+            } else {
+                // Adicionar nova anotação
+                const newNote = {
+                    id: generateId(),
+                    content: content,
+                    createdAt: new Date().toISOString()
+                };
+                appData.generalNotes.push(newNote);
+            }
+            
+            saveData();
+            renderGeneralNotes();
+        }
+
+        function deleteGeneralNote(noteId) {
+            appData.generalNotes = appData.generalNotes.filter(n => n.id !== noteId);
+            saveData();
+            renderGeneralNotes();
+        }
+
+        // Funções de modal
+        function showEditModal(title, initialValue, context, itemId = null) {
+            state.modalContext = context;
+            
+            if (context === 'habitNote' || context === 'generalNote') {
+                state.editingNoteId = itemId;
+            }
+            
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalInput').value = initialValue;
+            document.getElementById('universalModal').classList.remove('hidden');
+            document.getElementById('modalInput').focus();
+        }
+
+        function handleModalConfirm() {
+            const newValue = document.getElementById('modalInput').value.trim();
+            if (!newValue) return;
+
+            if (state.modalContext === 'habitName' && state.currentHabitId) {
+                updateHabitName(state.currentHabitId, newValue);
+                document.getElementById('habitNameTitle').textContent = newValue;
+            } else if (state.modalContext === 'habitNote' && state.currentHabitId) {
+                addHabitNote(state.currentHabitId, newValue, state.editingNoteId);
+            } else if (state.modalContext === 'generalNote') {
+                addGeneralNote(newValue, state.editingNoteId);
+            }
+
+            document.getElementById('universalModal').classList.add('hidden');
+            state.modalContext = null;
+            state.editingNoteId = null;
+        }
+
+        function showLogModal(date, logId = null) {
+            state.editingLogId = logId;
+            
+            const modalTitle = logId ? 'Editar Registro' : 'Novo Registro';
+            document.getElementById('logModalTitle').textContent = modalTitle;
+            
+            // Formatar data para o input date (YYYY-MM-DD)
+            const dateStr = date.toISOString().split('T')[0];
+            document.getElementById('logDate').value = dateStr;
+            
+            // Formatar hora para o input time (HH:MM)
+            const timeStr = date.toTimeString().substring(0, 5);
+            document.getElementById('logTime').value = timeStr;
+            
+            // Mostrar/ocultar botão de excluir
+            if (logId) {
+                document.getElementById('logModalDelete').classList.remove('hidden');
+            } else {
+                document.getElementById('logModalDelete').classList.add('hidden');
+            }
+            
+            document.getElementById('logModal').classList.remove('hidden');
+        }
+
+        function handleLogModalConfirm() {
+            const dateStr = document.getElementById('logDate').value;
+            const timeStr = document.getElementById('logTime').value;
+            
+            if (!dateStr || !timeStr) return;
+            
+            const dateTime = new Date(`${dateStr}T${timeStr}`);
+            
+            if (state.currentHabitId) {
+                addLog(state.currentHabitId, dateTime, state.editingLogId);
+            }
+            
+            document.getElementById('logModal').classList.add('hidden');
+            state.editingLogId = null;
+        }
+
+        function handleLogModalDelete() {
+            if (state.currentHabitId && state.editingLogId) {
+                deleteLog(state.currentHabitId, state.editingLogId);
+            }
+            
+            document.getElementById('logModal').classList.add('hidden');
+            state.editingLogId = null;
+        }
+
+        function showConfirmModal(title, message, action, itemId = null) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalMessage').textContent = message;
+            
+            // Armazenar a ação e o ID do item no modal
+            document.getElementById('confirmModal').setAttribute('data-action', action);
+            document.getElementById('confirmModal').setAttribute('data-item-id', itemId || '');
+            
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function handleConfirmModalConfirm() {
+            const action = document.getElementById('confirmModal').getAttribute('data-action');
+            const itemId = document.getElementById('confirmModal').getAttribute('data-item-id');
+            
+            if (action === 'deleteHabit' && state.currentHabitId) {
+                deleteHabit(state.currentHabitId);
+            } else if (action === 'deleteLog' && state.currentHabitId && itemId) {
+                deleteLog(state.currentHabitId, itemId);
+            } else if (action === 'deleteHabitNote' && state.currentHabitId && itemId) {
+                deleteHabitNote(state.currentHabitId, itemId);
+            } else if (action === 'deleteGeneralNote' && itemId) {
+                deleteGeneralNote(itemId);
+            } else if (action === 'clearData') {
+                clearAllData();
+            }
+            
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function showBackupModal() {
+            state.dataModalContext = 'backup';
+            document.getElementById('dataModalTitle').textContent = 'Backup de Dados';
+            document.getElementById('backupContent').classList.remove('hidden');
+            document.getElementById('restoreContent').classList.add('hidden');
+            document.getElementById('backupData').value = JSON.stringify(appData, null, 2);
+            document.getElementById('dataModal').classList.remove('hidden');
+        }
+
+        function showRestoreModal() {
+            state.dataModalContext = 'restore';
+            document.getElementById('dataModalTitle').textContent = 'Restaurar Dados';
+            document.getElementById('backupContent').classList.add('hidden');
+            document.getElementById('restoreContent').classList.remove('hidden');
+            document.getElementById('restoreData').value = '';
+            document.getElementById('dataModal').classList.remove('hidden');
+        }
+
+        function restoreData() {
             try {
-                if (db) db.close();
-                const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
-                deleteRequest.onsuccess = () => { alert('Todos os dados foram apagados! A página será recarregada.'); location.reload(); };
-                deleteRequest.onerror = (e) => { console.error("Erro ao apagar DB:", e); alert('Erro ao apagar os dados.'); }
-                deleteRequest.onblocked = () => alert('A exclusão foi bloqueada. Feche outras abas com o aplicativo aberto.');
-            } catch (error) { alert(`Ocorreu um erro ao apagar os dados: ${error.message}`); }
-        });
-    }
-
-    // --- NAVEGAÇÃO E EVENT LISTENERS ---
-    let currentCalendarDates = {}; 
-    
-    function handleNavClick(e) {
-        const button = e.target.closest('.nav-button');
-        if (!button) return;
-        
-        stopAllStreakIntervals(); // Para todos os contadores ao navegar
-        const targetId = button.dataset.target;
-        document.querySelectorAll('.content-section').forEach(section => section.classList.add('hidden'));
-        const targetSection = document.getElementById(`${targetId}-content`);
-
-        if (targetSection) {
-            targetSection.classList.remove('hidden');
-            const habitId = parseInt(targetId.substring(6));
-            const habitName = button.querySelector('span').textContent;
-            contentTitle.textContent = habitName;
-            if (!currentCalendarDates[habitId]) {
-                currentCalendarDates[habitId] = new Date();
+                const data = JSON.parse(document.getElementById('restoreData').value);
+                if (data && (data.habits || data.generalNotes)) {
+                    appData = data;
+                    saveData();
+                    updateUI();
+                    document.getElementById('dataModal').classList.add('hidden');
+                } else {
+                    alert('Dados inválidos. Verifique o formato do backup.');
+                }
+            } catch (e) {
+                alert('Erro ao restaurar dados. Verifique o formato do backup.');
             }
-            updateHabitPage(habitId, currentCalendarDates[habitId]);
-        } else if (targetId === 'dashboard') {
-            contentTitle.textContent = 'Visão Geral';
-            updateDashboard();
         }
 
-        document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
-        button.classList.add('bg-blue-600', 'text-white');
-        if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('-translate-x-full');
-    }
-
-    function setupEventListeners() {
-        document.getElementById('hamburger-button').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('-translate-x-full'));
-        document.getElementById('nav-menu').addEventListener('click', handleNavClick);
-        document.getElementById('add-habit-form').addEventListener('submit', handleAddHabit);
-        
-        habitPagesContainer.addEventListener('click', e => {
-            const habitPage = e.target.closest('.content-section');
-            if (!habitPage) return;
-            const habitId = parseInt(habitPage.id.split('-')[1]);
-            const action = e.target.closest('[data-action]')?.dataset.action;
-
-            switch(action) {
-                case 'prev-month':
-                case 'next-month':
-                case 'prev-year':
-                case 'next-year':
-                    const isAnnual = habitPage.dataset.isAnnualView === 'true';
-                    const date = currentCalendarDates[habitId];
-                    if (isAnnual) {
-                        date.setFullYear(date.getFullYear() + (action === 'next-year' ? 1 : -1));
-                    } else {
-                        date.setMonth(date.getMonth() + (action === 'next-month' ? 1 : -1));
-                    }
-                    renderCalendar(habitId, date, isAnnual);
-                    break;
-                case 'toggle-view':
-                    const willBeAnnual = habitPage.dataset.isAnnualView === 'false';
-                    habitPage.dataset.isAnnualView = willBeAnnual;
-                    renderCalendar(habitId, currentCalendarDates[habitId], willBeAnnual);
-                    break;
-                case 'delete-log':
-                    handleLogDelete(parseInt(e.target.closest('[data-log-id]').dataset.logId), habitId);
-                    break;
-                case 'edit-note':
-                    handleNoteEdit(parseInt(e.target.closest('[data-note-id]').dataset.noteId), habitId);
-                    break;
-                case 'delete-note':
-                    handleNoteDelete(parseInt(e.target.closest('[data-note-id]').dataset.noteId), habitId);
-                    break;
-            }
-
-            const dayCell = e.target.closest('.calendar-day, .annual-day');
-            if (dayCell) {
-                openLogModal(habitId, dayCell.dataset.date);
-            }
-        });
-        
-        habitPagesContainer.addEventListener('submit', e => {
-            e.preventDefault();
-            const habitPage = e.target.closest('.content-section');
-            if (!habitPage) return;
-            const habitId = parseInt(habitPage.id.split('-')[1]);
-            const action = e.target.closest('form')?.dataset.action;
-            if (action === 'add-note') {
-                handleHabitNoteSubmit(e.target, habitId);
-            }
-        });
-
-        habitStreaksContainer.addEventListener('click', e => {
-             const navButton = e.target.closest('.nav-button');
-             if (navButton && navButton.dataset.target) {
-                 document.querySelector(`.nav-button[data-target='${navButton.dataset.target}']`).click();
-             }
-        });
-
-        // Listeners do Modal
-        logForm.addEventListener('submit', handleLogSubmit);
-        document.getElementById('cancel-log-btn').addEventListener('click', closeLogModal);
-        
-        setupDataManagementListeners();
-    }
-    
-    // --- FUNÇÕES UTILITÁRIAS DO DB ---
-    function getFromDB(store, id) { return new Promise((r,j) => { const req = store.get(id); req.onsuccess = () => r(req.result); req.onerror = () => j(req.error); }); }
-    function getAllFromDB(store) { return new Promise((r,j) => { const req = store.getAll(); req.onsuccess = () => r(req.result); req.onerror = () => j(req.error); }); }
-    function getAllFromIndexDB(index, query) { return new Promise((r,j) => { const req = index.getAll(query); req.onsuccess = () => r(req.result); req.onerror = () => j(req.error); }); }
-    function addToDB(store, value) { return new Promise((r,j) => { const req = store.add(value); req.onsuccess = () => r(req.result); req.onerror = () => j(req.error); }); }
-    function updateInDB(store, value) { return new Promise((r,j) => { const req = store.put(value); req.onsuccess = () => r(req.result); req.onerror = () => j(req.error); }); }
-    function deleteFromDB(store, id) { return new Promise((r,j) => { const req = store.delete(id); req.onsuccess = () => r(); req.onerror = () => j(req.error); }); }
-    function clearDBStore(store) { return new Promise((r,j) => { const req = store.clear(); req.onsuccess = () => r(); req.onerror = () => j(req.error); }); }
-
-    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
-    function updateProgressBar(percentage, statusText) {
-        document.getElementById('progress-bar-inner').style.width = `${percentage}%`;
-        document.getElementById('progress-bar-inner').textContent = `${percentage}%`;
-        document.getElementById('loading-status').textContent = statusText;
-    }
-    
-    async function init() {
-        try {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            updateProgressBar(10, 'Abrindo banco de dados...');
-            await openDB();
-            updateProgressBar(30, 'Carregando seus hábitos...');
-            await loadAndDisplayHabits();
-            updateProgressBar(60, 'Configurando interações...');
-            setupEventListeners();
-            updateProgressBar(80, 'Montando o painel...');
-            document.querySelector('.nav-button[data-target="dashboard"]').click();
-            await new Promise(resolve => setTimeout(resolve, 200));
-            updateProgressBar(100, 'Pronto!');
-            await new Promise(resolve => setTimeout(resolve, 400));
-            loadingOverlay.classList.add('fade-out');
-            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
-        } catch (error) {
-            console.error('Falha na inicialização:', error);
-            document.getElementById('loading-overlay').style.display = 'none';
-            document.body.innerHTML = `<div class="text-white text-center p-8">Ocorreu um erro crítico. Verifique as permissões do navegador para o IndexedDB e recarregue a página. Detalhes: ${error}</div>`;
+        function clearAllData() {
+            appData = {
+                habits: [],
+                generalNotes: [],
+                lastActivity: null
+            };
+            saveData();
+            showDashboard();
         }
-    }
 
-    init();
-});
-</script>
+        // Funções de utilidade
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        }
 
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatStreak(streak) {
+            if (!streak) return '0d 0h 0m 0s';
+            
+            const days = Math.floor(streak / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((streak % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((streak % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((streak % (1000 * 60)) / 1000);
+            
+            return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            document.execCommand('copy');
+            
+            // Feedback visual
+            const originalText = document.getElementById('copyBackupBtn').textContent;
+            document.getElementById('copyBackupBtn').textContent = 'Copiado!';
+            setTimeout(() => {
+                document.getElementById('copyBackupBtn').textContent = originalText;
+            }, 2000);
+        }
+
+        // Funções de contador de sequência
+        function calculateHabitStreak(habitId) {
+            const habit = appData.habits.find(h => h.id === habitId);
+            if (!habit || !habit.logs || habit.logs.length === 0) return 0;
+            
+            // Ordenar logs por data (mais recente primeiro)
+            const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let streak = 0;
+            let lastDate = new Date();
+            
+            for (const log of sortedLogs) {
+                const logDate = new Date(log.date);
+                
+                // Se a diferença for maior que 24h, quebra a sequência
+                if ((lastDate - logDate) > (24 * 60 * 60 * 1000)) {
+                    break;
+                }
+                
+                streak += lastDate - logDate;
+                lastDate = logDate;
+            }
+            
+            return streak;
+        }
+
+        function calculateGlobalStreak() {
+            if (!appData.lastActivity) return 0;
+            
+            const lastActivityDate = new Date(appData.lastActivity);
+            const now = new Date();
+            
+            // Se a última atividade foi há mais de 24h, sequência é 0
+            if ((now - lastActivityDate) > (24 * 60 * 60 * 1000)) {
+                return 0;
+            }
+            
+            // Verificar se há logs em hábitos nos últimos 24h
+            const hasRecentLogs = appData.habits.some(habit => {
+                return habit.logs && habit.logs.some(log => {
+                    const logDate = new Date(log.date);
+                    return (now - logDate) <= (24 * 60 * 60 * 1000);
+                });
+            });
+            
+            if (!hasRecentLogs) return 0;
+            
+            // Calcular a sequência global
+            let globalStreak = 0;
+            let lastGlobalDate = now;
+            
+            // Ordenar todos os logs de todos os hábitos por data
+            const allLogs = appData.habits.flatMap(habit => habit.logs || []);
+            const sortedLogs = [...allLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            for (const log of sortedLogs) {
+                const logDate = new Date(log.date);
+                
+                // Se a diferença for maior que 24h, quebra a sequência
+                if ((lastGlobalDate - logDate) > (24 * 60 * 60 * 1000)) {
+                    break;
+                }
+                
+                globalStreak += lastGlobalDate - logDate;
+                lastGlobalDate = logDate;
+            }
+            
+            return globalStreak;
+        }
+
+        function updateStreakCounter() {
+            const globalStreak = calculateGlobalStreak();
+            document.getElementById('currentStreak').textContent = `Sequência: ${formatStreak(globalStreak)}`;
+            
+            if (state.currentView === 'habitDetail' && state.currentHabitId) {
+                const habitStreak = calculateHabitStreak(state.currentHabitId);
+                document.getElementById('habitStreak').textContent = `Sequência: ${formatStreak(habitStreak)}`;
+            }
+        }
+
+        function startStreakCounter() {
+            updateStreakCounter();
+            setInterval(updateStreakCounter, 1000);
+        }
+    </script>
 </body>
 </html>
