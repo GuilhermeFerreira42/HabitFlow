@@ -1,0 +1,73 @@
+### Checklist de Desenvolvimento do HabitFlow 2.0
+
+#### Fase 1: Melhorias de Confiança e Usabilidade Essencial
+
+O objetivo desta fase é fortalecer a confiança do usuário na aplicação, dando-lhe controle total sobre seus dados, e refinar as interações mais comuns para torná-las mais intuitivas.
+
+ [x] Módulo 1: Gerenciamento de Dados Baseado em Arquivos
+     [x] Tarefa 1.1: Implementar Backup em Arquivo
+         [x] Modificar o botão "Backup" na barra lateral.
+         [x] Criar uma função em JavaScript que leia todos os dados do `localStorage`.
+         [x] Converter o objeto de dados em uma string JSON formatada.
+         [x] Gerar um arquivo `.json` (ex: `habitflow_backup_data.json`) para download no navegador do usuário.
+     [x] Tarefa 1.2: Implementar Restauração via Arquivo
+         [x] Modificar o botão "Restaurar" para abrir um seletor de arquivos do sistema operacional.
+         [x] Criar uma função para ler o conteúdo do arquivo `.json` selecionado pelo usuário.
+         [x] Implementar uma validação para garantir que o arquivo tem a estrutura de dados esperada.
+         [x] Exibir um modal de confirmação final antes de sobrescrever os dados existentes.
+         [x] Substituir os dados no `localStorage` e recarregar a UI para refletir os novos dados.
+     [x] Tarefa 1.3: Aprimorar a Limpeza de Dados
+         [x] Garantir que o botão "Limpar Dados" acione um modal de confirmação claro e enfático sobre a perda permanente de dados.
+         [x] Ao confirmar, a função deve apagar completamente os dados do `localStorage` e reiniciar a aplicação ao seu estado inicial.
+
+ [ ] Módulo 2: Otimização da Interface de Anotações
+     [ ] Tarefa 2.1: Unificar Logs e Anotações em uma Linha do Tempo Única
+         [ ] Na "Página de Detalhes do Hábito", remover as seções separadas de "Logs Recentes" e "Anotações".
+         [ ] Criar um novo componente de feed único chamado "Histórico do Hábito".
+         [ ] Desenvolver a lógica em JavaScript para agregar os `logs` e as `notes` em um único array.
+         [ ] Ordenar o array unificado em ordem cronológica decrescente (do mais recente para o mais antigo).
+         [ ] Renderizar cada item no feed com um ícone e estilo distintos para diferenciar visualmente "Registros" de "Anotações".
+     [ ] Tarefa 2.2: Implementar Texto Expansível nas Anotações Gerais
+         [ ] Criar uma função que, ao renderizar as "Anotações Gerais", verifique o comprimento de cada nota.
+         [ ] Se uma nota for longa, exibi-la de forma truncada (ex: primeiras 5 linhas).
+         [ ] Adicionar um botão/link "Ver mais..." ao final do texto truncado.
+         [ ] Implementar a lógica para expandir o texto completo ao clicar em "Ver mais..." e alterar o botão para "Ver menos".
+         [ ] Garantir que a expansão e retração ocorram com uma transição suave de altura para uma melhor experiência visual.
+
+#### Fase 2: Reformulação da Navegação e Visualização de Dados
+
+O objetivo desta fase é transformar a maneira como o usuário navega pela aplicação e analisa seu progresso em larga escala, tornando a ferramenta mais ágil e poderosa.
+
+ [ ] Módulo 3: Navegação Direta via Barra Lateral
+     [ ] Tarefa 3.1: Redesenhar a Barra Lateral para Incluir Hábitos
+         [ ] Criar uma nova seção na barra lateral, abaixo dos links principais, chamada "Meus Hábitos".
+         [ ] Desenvolver uma função que leia todos os hábitos e os renderize dinamicamente como uma lista de links nesta nova seção.
+         [ ] Garantir que esta lista seja atualizada automaticamente quando um novo hábito for criado ou um existente for renomeado/excluído.
+     [ ] Tarefa 3.2: Implementar a Navegação Direta
+         [ ] Adicionar `event listeners` a cada link de hábito na barra lateral.
+         [ ] Ao clicar em um hábito, a aplicação deve navegar diretamente para a "Página de Detalhes" daquele hábito específico, atualizando todo o conteúdo principal.
+
+ [ ] Módulo 4: Calendário Anual Detalhado
+     [ ] Tarefa 4.1: Expandir o Layout do Calendário Anual
+         [ ] Redesenhar a área do calendário para que, na visão "Ano", ele ocupe um espaço significativamente maior.
+         [ ] Implementar uma grade (ex: 4x3) que exibirá 12 mini-calendários, um para cada mês.
+         [ ] Cada mini-calendário deve mostrar uma grade de dias (7 colunas) com os números dos dias.
+     [ ] Tarefa 4.2: Adicionar Interatividade e Destaques Visuais
+         [ ] A lógica deve marcar visualmente (com uma cor ou fundo) os dias que possuem pelo menos um registro de atividade.
+         [ ] Implementar um tooltip que aparece ao passar o mouse sobre um dia, mostrando a data completa.
+         [ ] Fazer com que um clique em qualquer área de um mini-calendário (ex: no nome do mês) mude a visão da aplicação para o calendário mensal detalhado daquele mês e ano.
+
+#### Fase 3: Implementação de Novas Ferramentas de Produtividade
+
+O objetivo desta fase é introduzir a funcionalidade do "Relógio Manual", adicionando uma nova e poderosa forma de o usuário interagir e registrar seus hábitos.
+
+ [ ] Módulo 5: Relógio Manual de Atividades ("Timer")
+     [ ] Tarefa 5.1: Desenhar e Integrar a Interface do Timer
+         [ ] Na "Página de Detalhes do Hábito", adicionar uma nova seção para o timer.
+         [ ] Desenvolver os elementos da UI: um display para o tempo (00:00:00) e os botões "Iniciar", "Pausar" e "Parar".
+     [ ] Tarefa 5.2: Implementar a Lógica do Cronômetro
+         [ ] Criar as funções em JavaScript para "Iniciar" (começa a contar o tempo), "Pausar" (interrompe a contagem sem resetar) e "Retomar" (continua a contagem).
+         [ ] Implementar a função "Parar", que interrompe o cronômetro.
+     [ ] Tarefa 5.3: Integrar o Timer com os Logs de Hábitos
+         [ ] Ao clicar em "Parar", o sistema deve abrir um modal de confirmação perguntando se o usuário deseja salvar a sessão.
+         [ ] Se confirmado, a duração total registrada no timer deve ser salva como um novo "log" para aquele hábito. (Nota: precisaremos decidir como armazenar e exibir logs baseados em duração).
