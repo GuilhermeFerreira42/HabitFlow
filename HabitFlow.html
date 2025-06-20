@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HabitFlow</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50%' y='50%' style='font-size: 90px;' text-anchor='middle' dominant-baseline='middle'>🏃‍♂️‍➡️</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -94,9 +95,10 @@
         </div>
 
         <div class="mt-4 pt-4 border-t border-white/10">
-            <button id="backupBtn" class="text-sm w-full py-1 px-3 rounded-lg hover:bg-white/10 transition">Backup</button>
-            <button id="restoreBtn" class="text-sm w-full py-1 px-3 rounded-lg hover:bg-white/10 transition">Restaurar</button>
-            <button id="clearDataBtn" class="text-sm w-full py-1 px-3 rounded-lg hover:bg-white/10 transition text-red-400">Limpar Dados</button>
+            <a href="#" id="settingsLink" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition text-white/70">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                Configurações
+            </a>
         </div>
     </aside>
 
@@ -207,6 +209,38 @@
                 </div>
             </div>
         </div>
+
+        <div id="settingsView" class="hidden fade-in">
+            <div class="flex items-center mb-6">
+                <button id="backFromSettings" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+                <h2 class="text-xl font-semibold">Configurações</h2>
+            </div>
+            <div class="glassmorphism border border-white/10 rounded-2xl p-6 max-w-2xl mx-auto">
+                <h3 class="font-medium text-lg mb-4">Gerenciamento de Dados</h3>
+                <p class="text-sm text-white/60 mb-6">Exporte seus dados para um arquivo seguro ou restaure-os a qualquer momento.</p>
+                <div class="space-y-3">
+                    <button id="backupBtn" class="w-full text-left flex items-center bg-white/5 p-4 rounded-lg hover:bg-white/10 transition">
+                        <span class="flex-1">Fazer Backup dos Dados</span>
+                        <span class="text-sm text-white/70">Exportar .json</span>
+                    </button>
+                    <button id="restoreBtn" class="w-full text-left flex items-center bg-white/5 p-4 rounded-lg hover:bg-white/10 transition">
+                        <span class="flex-1">Restaurar a partir de Backup</span>
+                         <span class="text-sm text-white/70">Importar .json</span>
+                    </button>
+                     <div class="pt-4 mt-4 border-t border-white/20">
+                         <h3 class="font-medium text-lg mb-4 text-red-400">Zona de Perigo</h3>
+                         <button id="clearDataBtn" class="w-full text-left flex items-center bg-red-500/10 p-4 rounded-lg hover:bg-red-500/20 transition text-red-400">
+                             <span class="flex-1 font-semibold">Limpar Todos os Dados</span>
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <div id="universalModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
@@ -276,7 +310,7 @@
     <script>
         // Estado da aplicação
         const state = {
-            currentView: 'dashboard', // 'dashboard', 'habitDetail', 'generalNotes'
+            currentView: 'dashboard', // 'dashboard', 'habitDetail', 'generalNotes', 'settings'
             currentHabitId: null,
             editingNoteId: null,
             editingLogId: null,
@@ -403,6 +437,8 @@
             });
             document.getElementById('prevCalendarBtn').addEventListener('click', navigateCalendar.bind(null, -1));
             document.getElementById('nextCalendarBtn').addEventListener('click', navigateCalendar.bind(null, 1));
+            document.getElementById('backFromSettings').addEventListener('click', () => showDashboard());
+            document.getElementById('settingsLink').addEventListener('click', () => showSettings());
         }
 
         // Funções de navegação
@@ -422,14 +458,20 @@
             updateUI();
         }
 
+        function showSettings() {
+            state.currentView = 'settings';
+            updateUI();
+        }
+
         // Funções de atualização da UI
         function updateUI() {
+            // Esconder todas as views
             document.getElementById('dashboardView').classList.add('hidden');
             document.getElementById('habitDetailView').classList.add('hidden');
             document.getElementById('generalNotesView').classList.add('hidden');
-
+            document.getElementById('settingsView').classList.add('hidden');
             renderSidebarHabitsList();
-
+            // Mostrar a view correta
             if (state.currentView === 'dashboard') {
                 document.getElementById('dashboardView').classList.remove('hidden');
                 renderHabits();
@@ -439,6 +481,9 @@
             } else if (state.currentView === 'generalNotes') {
                 document.getElementById('generalNotesView').classList.remove('hidden');
                 renderGeneralNotes();
+            } else if (state.currentView === 'settings') {
+                document.getElementById('settingsView').classList.remove('hidden');
+                // Nenhuma função de renderização é necessária pois o conteúdo é estático
             }
         }
         

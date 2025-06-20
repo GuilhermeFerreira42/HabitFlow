@@ -105,13 +105,13 @@ O objetivo desta fase é refinar as funcionalidades implementadas na Fase 2 com 
 
 O objetivo desta fase é refinar a organização da aplicação, movendo funções administrativas para uma área dedicada e adicionando uma nova e poderosa ferramenta de visualização de anotações no dashboard.
 
-- [ ] Módulo 5: Central de Configurações
-  - [ ] Tarefa 5.1: Criar o Botão de Configurações: Na barra lateral, substituir os botões "Backup", "Restaurar" e "Limpar Dados" por um único botão "Configurações", com um ícone de engrenagem.
-  - [ ] Tarefa 5.2: Criar a Página/View de Configurações: Desenvolver uma nova view (página inteira) que será exibida ao clicar no botão de Configurações.
-  - [ ] Tarefa 5.3: Mover as Funções de Dados: Realocar os botões e a funcionalidade de Backup, Restauração e Limpeza de Dados para dentro desta nova página de Configurações.
+- [x] Módulo 5: Central de Configurações
+  - [x] Tarefa 5.1: Criar o Botão de Configurações: Na barra lateral, substituir os botões "Backup", "Restaurar" e "Limpar Dados" por um único botão "Configurações", com um ícone de engrenagem.
+  - [x] Tarefa 5.2: Criar a Página/View de Configurações: Desenvolver uma nova view (página inteira) que será exibida ao clicar no botão de Configurações.
+  - [x] Tarefa 5.3: Mover as Funções de Dados: Realocar os botões e a funcionalidade de Backup, Restauração e Limpeza de Dados para dentro desta nova página de Configurações.
 
-- [ ] Módulo 6: Seção de "Feed de Anotações" no Dashboard
-  - [ ] Tarefa 6.1: Criar a Estrutura da Seção: No dashboard, adicionar uma nova seção (por padrão, oculta) que servirá como um feed de todas as anotações.
-  - [ ] Tarefa 6.2: Implementar Botão de Mostrar/Ocultar: Adicionar um botão no dashboard para controlar a visibilidade desta seção.
-  - [ ] Tarefa 6.3: Desenvolver a Lógica de Agregação: Criar uma função que colete todas as anotações (gerais e de hábitos específicos) e as ordene cronologicamente. Cada anotação de hábito deve indicar de qual hábito ela veio (Ex: "Do hábito: Ler 10 páginas").
-  - [ ] Tarefa 6.4: Salvar Preferência do Usuário: Usar o `localStorage` para salvar o estado (visível ou oculto) da seção de anotações, para que a escolha do usuário persista mesmo após recarregar a página.
+- [x] Módulo 6: Seção de "Feed de Anotações" no Dashboard
+  - [x] Tarefa 6.1: Criar a Estrutura da Seção: No dashboard, adicionar uma nova seção (por padrão, oculta) que servirá como um feed de todas as anotações.
+  - [x] Tarefa 6.2: Implementar Botão de Mostrar/Ocultar: Adicionar um botão no dashboard para controlar a visibilidade desta seção.
+  - [x] Tarefa 6.3: Desenvolver a Lógica de Agregação: Criar uma função que colete todas as anotações (gerais e de hábitos específicos) e as ordene cronologicamente. Cada anotação de hábito deve indicar de qual hábito ela veio (Ex: "Do hábito: Ler 10 páginas").
+  - [x] Tarefa 6.4: Salvar Preferência do Usuário: Usar o `localStorage` para salvar o estado (visível ou oculto) da seção de anotações, para que a escolha do usuário persista mesmo após recarregar a página.
