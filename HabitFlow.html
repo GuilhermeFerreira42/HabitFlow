@@ -131,7 +131,15 @@
                 <div class="lg:col-span-2">
                     <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-medium">Registro de Atividades</h3>
+                            <div class="flex items-center space-x-2">
+                                <button id="prevCalendarBtn" class="p-2 rounded-full hover:bg-white/10 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                                </button>
+                                <h3 id="calendarTitle" class="font-medium text-lg w-36 text-center"></h3>
+                                <button id="nextCalendarBtn" class="p-2 rounded-full hover:bg-white/10 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                </button>
+                            </div>
                             <div class="flex space-x-2">
                                 <button id="monthViewBtn" class="text-sm bg-blue-500 px-3 py-1 rounded-full">Mês</button>
                                 <button id="yearViewBtn" class="text-sm bg-white/5 px-3 py-1 rounded-full hover:bg-white/10 transition">Ano</button>
@@ -393,6 +401,8 @@
                     });
                 }
             });
+            document.getElementById('prevCalendarBtn').addEventListener('click', navigateCalendar.bind(null, -1));
+            document.getElementById('nextCalendarBtn').addEventListener('click', navigateCalendar.bind(null, 1));
         }
 
         // Funções de navegação
@@ -444,30 +454,27 @@
 
             appData.habits.forEach(habit => {
                 const habitCard = document.createElement('div');
-                habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col';
+                habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col cursor-pointer';
                 habitCard.innerHTML = `
-                  <div class="flex justify-between items-start cursor-pointer" data-habit-id-nav="${habit.id}">
+                  <div class="flex justify-between items-start">
                     <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
                     <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
-                      ${formatStreak(calculateHabitStreak(habit.id))}
+                      ---
                     </div>
                   </div>
-                  <div class="mt-2 text-sm text-white/60 cursor-pointer" data-habit-id-nav="${habit.id}">
+                  <div class="mt-2 text-sm text-white/60">
                     ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
                   </div>
                   <div class="mini-calendar-container mt-4 flex-grow"></div>
                 `;
-                // Ação de clique para navegar
-                habitCard.querySelectorAll('[data-habit-id-nav]').forEach(el => {
-                    el.addEventListener('click', () => showHabitDetail(habit.id));
-                });
+                habitCard.addEventListener('click', () => showHabitDetail(habit.id));
                 
-                // Renderiza o mini calendário
                 const miniCalContainer = habitCard.querySelector('.mini-calendar-container');
                 renderMiniCalendar(habit, miniCalContainer);
                 
                 container.appendChild(habitCard);
             });
+            updateStreakCounter();
         }
 
         function renderHabitDetail() {
@@ -492,7 +499,10 @@
         }
 
         function updateCalendar() {
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const titleEl = document.getElementById('calendarTitle');
             if (state.calendarView === 'month') {
+                titleEl.textContent = `${monthNames[state.currentMonth]} ${state.currentYear}`;
                 document.getElementById('monthCalendar').classList.remove('hidden');
                 document.getElementById('yearCalendar').classList.add('hidden');
                 document.getElementById('monthViewBtn').classList.add('bg-blue-500');
@@ -501,6 +511,7 @@
                 document.getElementById('yearViewBtn').classList.add('bg-white/5');
                 renderMonthCalendar();
             } else {
+                titleEl.textContent = state.currentYear;
                 document.getElementById('monthCalendar').classList.add('hidden');
                 document.getElementById('yearCalendar').classList.remove('hidden');
                 document.getElementById('monthViewBtn').classList.remove('bg-blue-500');
@@ -515,10 +526,14 @@
         function renderMiniCalendar(habit, container) {
             container.innerHTML = '';
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Zera a hora para comparação de data
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
-            
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            // NOVO: Título do mini-calendário
+            const title = document.createElement('h5');
+            title.className = 'text-xs text-white/70 mb-2 text-center font-semibold';
+            title.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            container.appendChild(title);
             const daysHeader = document.createElement('div');
             daysHeader.className = 'grid grid-cols-7 gap-1 text-xs text-center text-white/50 mb-1';
             ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].forEach(name => {
@@ -527,32 +542,25 @@
                 daysHeader.appendChild(dayNameEl);
             });
             container.appendChild(daysHeader);
-
             const daysContainer = document.createElement('div');
             daysContainer.className = 'grid grid-cols-7 gap-1';
-
             const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
             for (let i = 0; i < firstDayOfMonth; i++) {
                 daysContainer.appendChild(document.createElement('div'));
             }
-
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
                 const currentDate = new Date(currentYear, currentMonth, day);
+                currentDate.setHours(0,0,0,0);
                 dayCell.className = 'h-6 w-6 flex items-center justify-center rounded-full text-xs';
-                
                 const hasLog = habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(currentDate)));
                 if (hasLog) {
                     dayCell.classList.add('bg-blue-500/50');
                 }
-                
-                // Destaca o dia atual
-                if (currentDate.getTime() === today.getTime()) {
+                if (currentDate.getTime() === today.setHours(0,0,0,0)) {
                     dayCell.classList.add('is-today');
                 }
-                
                 dayCell.textContent = day;
                 daysContainer.appendChild(dayCell);
             }
@@ -1059,15 +1067,12 @@
 
         function formatStreak(duration) {
             if (!duration || duration <= 0) return '---';
-            
             const totalSeconds = Math.floor(duration / 1000);
             const days = Math.floor(totalSeconds / 86400);
             const hours = Math.floor((totalSeconds % 86400) / 3600);
             const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-            if (days > 0) return `${days}d ${hours}h`;
-            if (hours > 0) return `${hours}h ${minutes}m`;
-            return `${minutes}m`;
+            const seconds = Math.floor(totalSeconds % 60);
+            return `${days}d ${hours}h ${minutes}m ${seconds}s`;
         }
 
         function copyToClipboard(elementId) {
@@ -1083,39 +1088,22 @@
         // Funções de sequência (Streak)
         function calculateHabitStreak(habitId) {
             const habit = appData.habits.find(h => h.id === habitId);
-            if (!habit || !habit.logs || habit.logs.length < 2) return 0;
-            
-            const sortedLogs = [...habit.logs].map(l => new Date(l.date).getTime()).sort((a, b) => b - a);
-            
-            let currentStreak = 0;
-            const oneDay = 24 * 60 * 60 * 1000;
-
-            // Começa do log mais recente
-            let lastLogTime = sortedLogs[0];
-            
-            // A sequência só é válida se o último log for de hoje ou ontem
-            if (new Date().getTime() - lastLogTime > oneDay * 2) {
-                return 0;
+            if (!habit || !habit.logs || habit.logs.length === 0) return null;
+            const sortedLogs = habit.logs.map(l => new Date(l.date)).sort((a, b) => b - a);
+            const now = new Date();
+            const twoDays = 48 * 60 * 60 * 1000;
+            if (now - sortedLogs[0] > twoDays) {
+                return null; // A sequência foi quebrada se o último log tem mais de 2 dias
             }
-
-            for (let i = 1; i < sortedLogs.length; i++) {
-                const currentLogTime = sortedLogs[i];
-                const diff = lastLogTime - currentLogTime;
-
-                if (diff <= oneDay * 1.5) { // Permite uma tolerância maior que 24h exatas
-                    // Continua a sequência, mas não adiciona ao contador de 'dias' ainda
-                } else {
-                    // Quebrou a sequência, para a contagem
-                    lastLogTime = sortedLogs[i-1];
-                    break;
+            let streakStartDate = sortedLogs[0];
+            for (let i = 0; i < sortedLogs.length - 1; i++) {
+                const diff = sortedLogs[i] - sortedLogs[i+1];
+                if (diff > twoDays) {
+                    break; // Quebrou a sequência
                 }
-                 lastLogTime = currentLogTime;
-                 if(i === sortedLogs.length - 1) { // se chegou ao fim
-                    lastLogTime = currentLogTime;
-                 }
+                streakStartDate = sortedLogs[i+1];
             }
-
-            return sortedLogs[0] - lastLogTime;
+            return streakStartDate;
         }
 
         function renderSidebarHabitsList() {
@@ -1148,13 +1136,36 @@
             const habitCounters = document.querySelectorAll('[data-habit-id]');
             habitCounters.forEach(counter => {
                 const habitId = counter.getAttribute('data-habit-id');
-                counter.textContent = formatStreak(calculateHabitStreak(habitId));
+                const streakStartDate = calculateHabitStreak(habitId);
+                if (streakStartDate) {
+                    const now = new Date();
+                    const duration = now - streakStartDate;
+                    counter.textContent = formatStreak(duration);
+                } else {
+                    counter.textContent = '0d 0h 0m 0s';
+                }
             });
         }
         
         function startStreakCounter() {
-            // A lógica de streak agora é menos "em tempo real", então não precisa de um timer a cada segundo.
-            // A atualização acontece naturalmente com a renderização da UI.
+            updateStreakCounter(); // Executa uma vez imediatamente
+            setInterval(updateStreakCounter, 1000); // E depois a cada segundo
+        }
+
+        function navigateCalendar(direction) {
+            if (state.calendarView === 'month') {
+                state.currentMonth += direction;
+                if (state.currentMonth < 0) {
+                    state.currentMonth = 11;
+                    state.currentYear--;
+                } else if (state.currentMonth > 11) {
+                    state.currentMonth = 0;
+                    state.currentYear++;
+                }
+            } else { // 'year'
+                state.currentYear += direction;
+            }
+            updateCalendar();
         }
     </script>
 </body>

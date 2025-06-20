@@ -93,13 +93,13 @@ O objetivo desta fase é aprimorar drasticamente a principal ferramenta de inter
 
 O objetivo desta fase é refinar as funcionalidades implementadas na Fase 2 com base no seu feedback, melhorando a navegação, o contexto visual e a interatividade geral da aplicação.
 
-- [ ] Módulo 1: Navegação e Contexto dos Calendários
-  - [ ] Tarefa 1.1: Adicionar Título e Navegação ao Calendário Principal: Na página de detalhes do hábito, acima dos calendários (mensal e anual), adicionar um título claro (Ex: "Julho de 2025") e botões de "anterior" e "próximo" para permitir a navegação entre os meses (na visão mensal) ou anos (na visão anual).
-  - [ ] Tarefa 1.2: Adicionar Título ao Mini-Calendário: Em cada card de hábito no dashboard, exibir o nome do mês e o ano corrente acima do respectivo mini-calendário para que o usuário sempre saiba a que período a visualização se refere.
+- [x] Módulo 1: Navegação e Contexto dos Calendários
+  - [x] Tarefa 1.1: Adicionar Título e Navegação ao Calendário Principal: Na página de detalhes do hábito, acima dos calendários (mensal e anual), adicionar um título claro (Ex: "Julho de 2025") e botões de "anterior" e "próximo" para permitir a navegação entre os meses (na visão mensal) ou anos (na visão anual).
+  - [x] Tarefa 1.2: Adicionar Título ao Mini-Calendário: Em cada card de hábito no dashboard, exibir o nome do mês e o ano corrente acima do respectivo mini-calendário para que o usuário sempre saiba a que período a visualização se refere.
 
-- [ ] Módulo 2: Consistência de Interface e Experiência do Usuário
-  - [ ] Tarefa 2.1: Reativar Relógio Dinâmico de Sequência (Streak): Ajustar a função de formatação e o mecanismo de atualização para que o contador de sequência (streak) em cada card do dashboard volte a ser dinâmico, exibindo dias, horas, minutos e segundos em tempo real (ex: "2d 5h 12m 45s").
-  - [ ] Tarefa 2.2: Tornar Todo o Cartão de Hábito Clicável: Modificar os cards de hábito no dashboard para que o clique em qualquer área do cartão — incluindo o título, a contagem de registros e o mini-calendário — abra a página de detalhes do respectivo hábito, unificando a interação.
+- [x] Módulo 2: Consistência de Interface e Experiência do Usuário
+  - [x] Tarefa 2.1: Reativar Relógio Dinâmico de Sequência (Streak): Ajustar a função de formatação e o mecanismo de atualização para que o contador de sequência (streak) em cada card do dashboard volte a ser dinâmico, exibindo dias, horas, minutos e segundos em tempo real (ex: "2d 5h 12m 45s").
+  - [x] Tarefa 2.2: Tornar Todo o Cartão de Hábito Clicável: Modificar os cards de hábito no dashboard para que o clique em qualquer área do cartão — incluindo o título, a contagem de registros e o mini-calendário — abra a página de detalhes do respectivo hábito, unificando a interação.
 
 #### Fase 3: Dashboard Inteligente e Configurações
 
