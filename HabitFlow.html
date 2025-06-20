@@ -64,6 +64,11 @@
                         Anotações Gerais
                     </a>
                 </li>
+                <li class="pt-4 mt-4 border-t border-white/10">
+                    <h3 class="text-sm font-semibold text-white/70 mb-2 px-2">MEUS HÁBITOS</h3>
+                    <div id="sidebarHabitsList" class="space-y-1">
+                    </div>
+                </li>
             </ul>
         </nav>
 
@@ -421,6 +426,9 @@
             document.getElementById('habitDetailView').classList.add('hidden');
             document.getElementById('generalNotesView').classList.add('hidden');
 
+            // NOVO: Renderiza a lista de hábitos na barra lateral em toda atualização
+            renderSidebarHabitsList();
+
             // Mostrar a view correta
             if (state.currentView === 'dashboard') {
                 document.getElementById('dashboardView').classList.remove('hidden');
@@ -548,39 +556,71 @@
         function renderYearCalendar() {
             const yearContainer = document.getElementById('yearCalendar');
             yearContainer.innerHTML = '';
+            // Muda o layout da grade para exibir os meses de forma mais espaçosa
+            yearContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
 
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) return;
 
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const dayNames = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
             for (let month = 0; month < 12; month++) {
-                const monthElement = document.createElement('div');
-                monthElement.className = 'glassmorphism border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition';
-                
-                const monthName = document.createElement('div');
-                monthName.className = 'text-center font-medium mb-1';
-                monthName.textContent = new Date(state.currentYear, month, 1).toLocaleString('default', { month: 'short' });
-                monthElement.appendChild(monthName);
-                
-                const daysContainer = document.createElement('div');
-                daysContainer.className = 'grid grid-cols-7 gap-1';
-                
-                // Verificar se há logs neste mês
-                const monthHasLogs = habit.logs && habit.logs.some(log => {
-                    const logDate = new Date(log.date);
-                    return logDate.getFullYear() === state.currentYear && logDate.getMonth() === month;
-                });
-                
-                if (monthHasLogs) {
-                    monthElement.classList.add('border-blue-500/50');
-                }
-                
-                monthElement.addEventListener('click', () => {
+                const monthWrapper = document.createElement('div');
+                monthWrapper.className = 'glassmorphism border border-white/10 rounded-xl p-3 text-sm';
+
+                // Título do Mês (Clicável)
+                const monthTitle = document.createElement('h4');
+                monthTitle.className = 'font-semibold text-center mb-2 cursor-pointer hover:text-blue-400';
+                monthTitle.textContent = monthNames[month];
+                monthTitle.onclick = () => {
                     state.currentMonth = month;
                     state.calendarView = 'month';
                     updateCalendar();
+                };
+                monthWrapper.appendChild(monthTitle);
+
+                // Grid dos dias da semana
+                const daysHeader = document.createElement('div');
+                daysHeader.className = 'grid grid-cols-7 gap-1 text-xs text-center text-white/50 mb-1';
+                dayNames.forEach(name => {
+                    const dayNameEl = document.createElement('div');
+                    dayNameEl.textContent = name;
+                    daysHeader.appendChild(dayNameEl);
                 });
-                
-                yearContainer.appendChild(monthElement);
+                monthWrapper.appendChild(daysHeader);
+
+                // Grid dos dias
+                const daysContainer = document.createElement('div');
+                daysContainer.className = 'grid grid-cols-7 gap-1';
+
+                const firstDayOfMonth = new Date(state.currentYear, month, 1).getDay();
+                const daysInMonth = new Date(state.currentYear, month + 1, 0).getDate();
+
+                // Adiciona células vazias para o início do mês
+                for (let i = 0; i < firstDayOfMonth; i++) {
+                    daysContainer.appendChild(document.createElement('div'));
+                }
+
+                // Adiciona os dias do mês
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'h-6 w-6 flex items-center justify-center rounded-full hover:bg-white/10 transition cursor-pointer';
+                    dayCell.textContent = day;
+                    const currentDate = new Date(state.currentYear, month, day);
+
+                    // Verifica se há log neste dia
+                    const hasLog = habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(currentDate)));
+                    if (hasLog) {
+                        dayCell.classList.add('bg-blue-500/50', 'border', 'border-blue-400');
+                    }
+
+                    dayCell.onclick = () => showLogModal(currentDate);
+                    daysContainer.appendChild(dayCell);
+                }
+
+                monthWrapper.appendChild(daysContainer);
+                yearContainer.appendChild(monthWrapper);
             }
         }
 
@@ -1109,6 +1149,40 @@
         function startStreakCounter() {
             updateStreakCounter();
             setInterval(updateStreakCounter, 1000);
+        }
+
+        // NOVO: Função para renderizar a lista de hábitos na barra lateral
+        function renderSidebarHabitsList() {
+            const container = document.getElementById('sidebarHabitsList');
+            container.innerHTML = ''; // Limpa a lista antes de renderizar
+
+            if (!appData.habits || appData.habits.length === 0) {
+                container.innerHTML = '<p class="px-2 text-xs text-white/40">Nenhum hábito criado.</p>';
+                return;
+            }
+
+            // Ordena os hábitos por data de criação para consistência
+            const sortedHabits = [...appData.habits].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            sortedHabits.forEach(habit => {
+                const habitLink = document.createElement('a');
+                habitLink.href = '#';
+                habitLink.className = 'flex items-center p-2 text-sm rounded-lg hover:bg-white/10 transition truncate';
+                habitLink.textContent = habit.name;
+
+                // Adiciona um destaque visual se o hábito selecionado for o atual
+                if (state.currentView === 'habitDetail' && state.currentHabitId === habit.id) {
+                    habitLink.classList.add('bg-white/10', 'text-white');
+                } else {
+                    habitLink.classList.add('text-white/70');
+                }
+
+                habitLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showHabitDetail(habit.id);
+                });
+                container.appendChild(habitLink);
+            });
         }
     </script>
 </body>

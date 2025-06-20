@@ -20,32 +20,32 @@ O objetivo desta fase é fortalecer a confiança do usuário na aplicação, dan
          [x] Garantir que o botão "Limpar Dados" acione um modal de confirmação claro e enfático sobre a perda permanente de dados.
          [x] Ao confirmar, a função deve apagar completamente os dados do `localStorage` e reiniciar a aplicação ao seu estado inicial.
 
- [ ] Módulo 2: Otimização da Interface de Anotações
-     [ ] Tarefa 2.1: Unificar Logs e Anotações em uma Linha do Tempo Única
-         [ ] Na "Página de Detalhes do Hábito", remover as seções separadas de "Logs Recentes" e "Anotações".
-         [ ] Criar um novo componente de feed único chamado "Histórico do Hábito".
-         [ ] Desenvolver a lógica em JavaScript para agregar os `logs` e as `notes` em um único array.
-         [ ] Ordenar o array unificado em ordem cronológica decrescente (do mais recente para o mais antigo).
-         [ ] Renderizar cada item no feed com um ícone e estilo distintos para diferenciar visualmente "Registros" de "Anotações".
-     [ ] Tarefa 2.2: Implementar Texto Expansível nas Anotações Gerais
-         [ ] Criar uma função que, ao renderizar as "Anotações Gerais", verifique o comprimento de cada nota.
-         [ ] Se uma nota for longa, exibi-la de forma truncada (ex: primeiras 5 linhas).
-         [ ] Adicionar um botão/link "Ver mais..." ao final do texto truncado.
-         [ ] Implementar a lógica para expandir o texto completo ao clicar em "Ver mais..." e alterar o botão para "Ver menos".
-         [ ] Garantir que a expansão e retração ocorram com uma transição suave de altura para uma melhor experiência visual.
+ [x] Módulo 2: Otimização da Interface de Anotações
+     [x] Tarefa 2.1: Unificar Logs e Anotações em uma Linha do Tempo Única
+         [x] Na "Página de Detalhes do Hábito", remover as seções separadas de "Logs Recentes" e "Anotações".
+         [x] Criar um novo componente de feed único chamado "Histórico do Hábito".
+         [x] Desenvolver a lógica em JavaScript para agregar os `logs` e as `notes` em um único array.
+         [x] Ordenar o array unificado em ordem cronológica decrescente (do mais recente para o mais antigo).
+         [x] Renderizar cada item no feed com um ícone e estilo distintos para diferenciar visualmente "Registros" de "Anotações".
+     [x] Tarefa 2.2: Implementar Texto Expansível nas Anotações Gerais
+         [x] Criar uma função que, ao renderizar as "Anotações Gerais", verifique o comprimento de cada nota.
+         [x] Se uma nota for longa, exibi-la de forma truncada (ex: primeiras 5 linhas).
+         [x] Adicionar um botão/link "Ver mais..." ao final do texto truncado.
+         [x] Implementar a lógica para expandir o texto completo ao clicar em "Ver mais..." e alterar o botão para "Ver menos".
+         [x] Garantir que a expansão e retração ocorram com uma transição suave de altura para uma melhor experiência visual.
 
 #### Fase 2: Reformulação da Navegação e Visualização de Dados
 
 O objetivo desta fase é transformar a maneira como o usuário navega pela aplicação e analisa seu progresso em larga escala, tornando a ferramenta mais ágil e poderosa.
 
- [ ] Módulo 3: Navegação Direta via Barra Lateral
-     [ ] Tarefa 3.1: Redesenhar a Barra Lateral para Incluir Hábitos
-         [ ] Criar uma nova seção na barra lateral, abaixo dos links principais, chamada "Meus Hábitos".
-         [ ] Desenvolver uma função que leia todos os hábitos e os renderize dinamicamente como uma lista de links nesta nova seção.
-         [ ] Garantir que esta lista seja atualizada automaticamente quando um novo hábito for criado ou um existente for renomeado/excluído.
-     [ ] Tarefa 3.2: Implementar a Navegação Direta
-         [ ] Adicionar `event listeners` a cada link de hábito na barra lateral.
-         [ ] Ao clicar em um hábito, a aplicação deve navegar diretamente para a "Página de Detalhes" daquele hábito específico, atualizando todo o conteúdo principal.
+ [x] Módulo 3: Navegação Direta via Barra Lateral
+     [x] Tarefa 3.1: Redesenhar a Barra Lateral para Incluir Hábitos
+         [x] Criar uma nova seção na barra lateral, abaixo dos links principais, chamada "Meus Hábitos".
+         [x] Desenvolver uma função que leia todos os hábitos e os renderize dinamicamente como uma lista de links nesta nova seção.
+         [x] Garantir que esta lista seja atualizada automaticamente quando um novo hábito for criado ou um existente for renomeado/excluído.
+     [x] Tarefa 3.2: Implementar a Navegação Direta
+         [x] Adicionar `event listeners` a cada link de hábito na barra lateral.
+         [x] Ao clicar em um hábito, a aplicação deve navegar diretamente para a "Página de Detalhes" daquele hábito específico, atualizando todo o conteúdo principal.
 
  [ ] Módulo 4: Calendário Anual Detalhado
      [ ] Tarefa 4.1: Expandir o Layout do Calendário Anual
