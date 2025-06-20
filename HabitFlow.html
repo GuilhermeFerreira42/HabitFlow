@@ -106,10 +106,20 @@
         <div id="dashboardView" class="fade-in">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold">Meus Hábitos</h2>
+                <button id="toggleNotesFeedBtn" class="p-2 rounded-full hover:bg-white/10 transition" title="Mostrar/Ocultar Feed de Anotações">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </button>
             </div>
 
             <div id="habitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               </div>
+            <div id="notesFeedContainer" class="hidden mt-8">
+                <h2 class="text-xl font-semibold mb-4">Feed de Anotações</h2>
+                <div id="notesFeedContent" class="space-y-4">
+                    </div>
+            </div>
         </div>
 
         <div id="habitDetailView" class="hidden fade-in">
@@ -335,7 +345,8 @@
         let appData = {
             habits: [],
             generalNotes: [],
-            lastActivity: null
+            lastActivity: null,
+            isNotesFeedVisible: false // NOVO (Fase 3 / Módulo 6)
         };
 
         // Funções de dados
@@ -343,6 +354,10 @@
             const savedData = localStorage.getItem('habitFlowData');
             if (savedData) {
                 appData = JSON.parse(savedData);
+                // NOVO: Garante compatibilidade com dados antigos
+                if (appData.isNotesFeedVisible === undefined) {
+                    appData.isNotesFeedVisible = false;
+                }
             }
         }
 
@@ -439,6 +454,11 @@
             document.getElementById('nextCalendarBtn').addEventListener('click', navigateCalendar.bind(null, 1));
             document.getElementById('backFromSettings').addEventListener('click', () => showDashboard());
             document.getElementById('settingsLink').addEventListener('click', () => showSettings());
+            document.getElementById('toggleNotesFeedBtn').addEventListener('click', () => {
+                appData.isNotesFeedVisible = !appData.isNotesFeedVisible; // Alterna o estado
+                persistData(); // Salva a preferência
+                updateNotesFeedVisibility(); // Atualiza a UI
+            });
         }
 
         // Funções de navegação
@@ -491,35 +511,34 @@
         function renderHabits() {
             const container = document.getElementById('habitsContainer');
             container.innerHTML = '';
-
             if (appData.habits.length === 0) {
                 container.innerHTML = '<div class="text-center py-10 text-white/40 col-span-full">Nenhum hábito cadastrado. Adicione um na barra lateral.</div>';
-                return;
+            } else {
+                 appData.habits.forEach(habit => {
+                    const habitCard = document.createElement('div');
+                    habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col cursor-pointer';
+                    habitCard.innerHTML = `
+                      <div class="flex justify-between items-start">
+                        <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
+                        <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
+                          ---
+                        </div>
+                      </div>
+                      <div class="mt-2 text-sm text-white/60">
+                        ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
+                      </div>
+                      <div class="mini-calendar-container mt-4 flex-grow"></div>
+                    `;
+                    habitCard.addEventListener('click', () => showHabitDetail(habit.id));
+                    const miniCalContainer = habitCard.querySelector('.mini-calendar-container');
+                    renderMiniCalendar(habit, miniCalContainer);
+                    container.appendChild(habitCard);
+                });
             }
-
-            appData.habits.forEach(habit => {
-                const habitCard = document.createElement('div');
-                habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col cursor-pointer';
-                habitCard.innerHTML = `
-                  <div class="flex justify-between items-start">
-                    <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
-                    <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
-                      ---
-                    </div>
-                  </div>
-                  <div class="mt-2 text-sm text-white/60">
-                    ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
-                  </div>
-                  <div class="mini-calendar-container mt-4 flex-grow"></div>
-                `;
-                habitCard.addEventListener('click', () => showHabitDetail(habit.id));
-                
-                const miniCalContainer = habitCard.querySelector('.mini-calendar-container');
-                renderMiniCalendar(habit, miniCalContainer);
-                
-                container.appendChild(habitCard);
-            });
+           // A chamada para atualizar o contador é necessária após a renderização
             updateStreakCounter();
+            // NOVO: Atualiza a visibilidade do feed de anotações
+            updateNotesFeedVisibility();
         }
 
         function renderHabitDetail() {
@@ -1211,6 +1230,64 @@
                 state.currentYear += direction;
             }
             updateCalendar();
+        }
+
+        // NOVO (Fase 3 / Módulo 6): Renderiza o feed de anotações
+        function renderNotesFeed() {
+            const container = document.getElementById('notesFeedContent');
+            container.innerHTML = '';
+            let allNotes = [];
+            // Coleta anotações gerais
+            appData.generalNotes.forEach(note => {
+                allNotes.push({ ...note, type: 'general' });
+            });
+            // Coleta anotações de hábitos
+            appData.habits.forEach(habit => {
+                if (habit.notes) {
+                    habit.notes.forEach(note => {
+                        allNotes.push({ ...note, type: 'habit', habitName: habit.name });
+                    });
+                }
+            });
+            // Ordena todas as anotações pela data de criação (mais recentes primeiro)
+            allNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            if (allNotes.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-white/40 col-span-full">Nenhuma anotação encontrada.</div>';
+                return;
+            }
+            allNotes.forEach(note => {
+                const noteCard = document.createElement('div');
+                noteCard.className = 'glassmorphism border border-white/10 rounded-xl p-4';
+                const noteDate = new Date(note.createdAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+                let headerHTML = `<span class="text-xs text-white/60">${noteDate}</span>`;
+                if (note.type === 'habit') {
+                    headerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-white/60">${noteDate}</span>
+                            <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">Do hábito: ${note.habitName}</span>
+                        </div>
+                    `;
+                }
+                noteCard.innerHTML = `
+                    <div class="mb-2">${headerHTML}</div>
+                    <p class="text-sm whitespace-pre-line break-word">${note.content}</p>
+                `;
+                container.appendChild(noteCard);
+            });
+        }
+
+        // NOVO (Fase 3 / Módulo 6): Controla a visibilidade do feed na UI
+        function updateNotesFeedVisibility() {
+            const container = document.getElementById('notesFeedContainer');
+            const toggleBtn = document.getElementById('toggleNotesFeedBtn');
+            if (appData.isNotesFeedVisible) {
+                renderNotesFeed(); // Renderiza o conteúdo
+                container.classList.remove('hidden');
+                toggleBtn.classList.add('bg-blue-500/20'); // Destaque visual no botão
+            } else {
+                container.classList.add('hidden');
+                toggleBtn.classList.remove('bg-blue-500/20');
+            }
         }
     </script>
 </body>
