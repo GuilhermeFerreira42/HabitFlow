@@ -47,27 +47,62 @@ O objetivo desta fase é transformar a maneira como o usuário navega pela aplic
          [x] Adicionar `event listeners` a cada link de hábito na barra lateral.
          [x] Ao clicar em um hábito, a aplicação deve navegar diretamente para a "Página de Detalhes" daquele hábito específico, atualizando todo o conteúdo principal.
 
- [ ] Módulo 4: Calendário Anual Detalhado
-     [ ] Tarefa 4.1: Expandir o Layout do Calendário Anual
-         [ ] Redesenhar a área do calendário para que, na visão "Ano", ele ocupe um espaço significativamente maior.
-         [ ] Implementar uma grade (ex: 4x3) que exibirá 12 mini-calendários, um para cada mês.
-         [ ] Cada mini-calendário deve mostrar uma grade de dias (7 colunas) com os números dos dias.
-     [ ] Tarefa 4.2: Adicionar Interatividade e Destaques Visuais
-         [ ] A lógica deve marcar visualmente (com uma cor ou fundo) os dias que possuem pelo menos um registro de atividade.
-         [ ] Implementar um tooltip que aparece ao passar o mouse sobre um dia, mostrando a data completa.
-         [ ] Fazer com que um clique em qualquer área de um mini-calendário (ex: no nome do mês) mude a visão da aplicação para o calendário mensal detalhado daquele mês e ano.
+ [x] Módulo 4: Calendário Anual Detalhado
+     [x] Tarefa 4.1: Expandir o Layout do Calendário Anual
+         [x] Redesenhar a área do calendário para que, na visão "Ano", ele ocupe um espaço significativamente maior.
+         [x] Implementar uma grade (ex: 4x3) que exibirá 12 mini-calendários, um para cada mês.
+         [x] Cada mini-calendário deve mostrar uma grade de dias (7 colunas) com os números dos dias.
+     [x] Tarefa 4.2: Adicionar Interatividade e Destaques Visuais
+         [x] A lógica deve marcar visualmente (com uma cor ou fundo) os dias que possuem pelo menos um registro de atividade.
+         [x] Implementar um tooltip que aparece ao passar o mouse sobre um dia, mostrando a data completa.
+         [x] Fazer com que um clique em qualquer área de um mini-calendário (ex: no nome do mês) mude a visão da aplicação para o calendário mensal detalhado daquele mês e ano.
 
-#### Fase 3: Implementação de Novas Ferramentas de Produtividade
 
-O objetivo desta fase é introduzir a funcionalidade do "Relógio Manual", adicionando uma nova e poderosa forma de o usuário interagir e registrar seus hábitos.
+---
 
- [ ] Módulo 5: Relógio Manual de Atividades ("Timer")
-     [ ] Tarefa 5.1: Desenhar e Integrar a Interface do Timer
-         [ ] Na "Página de Detalhes do Hábito", adicionar uma nova seção para o timer.
-         [ ] Desenvolver os elementos da UI: um display para o tempo (00:00:00) e os botões "Iniciar", "Pausar" e "Parar".
-     [ ] Tarefa 5.2: Implementar a Lógica do Cronômetro
-         [ ] Criar as funções em JavaScript para "Iniciar" (começa a contar o tempo), "Pausar" (interrompe a contagem sem resetar) e "Retomar" (continua a contagem).
-         [ ] Implementar a função "Parar", que interrompe o cronômetro.
-     [ ] Tarefa 5.3: Integrar o Timer com os Logs de Hábitos
-         [ ] Ao clicar em "Parar", o sistema deve abrir um modal de confirmação perguntando se o usuário deseja salvar a sessão.
-         [ ] Se confirmado, a duração total registrada no timer deve ser salva como um novo "log" para aquele hábito. (Nota: precisaremos decidir como armazenar e exibir logs baseados em duração).
+
+
+### Checklist de Desenvolvimento do HabitFlow 3.0
+
+#### Fase 1: Correções Críticas e Melhorias de UX (Experiência do Usuário)
+
+O objetivo desta fase é resolver os problemas mais impactantes da versão atual, como a falta de atualização dinâmica, bugs visuais e aprimoramentos de interação que tornarão o uso da aplicação mais fluido e agradável.
+
+ [ ] Módulo 1: Reatividade e Correções Visuais
+     [ ] Tarefa 1.1: Corrigir Reatividade do Dashboard: Modificar as funções de adição/edição para que o dashboard (lista de hábitos) se atualize automaticamente, sem a necessidade de recarregar a página.
+     [ ] Tarefa 1.2: Corrigir Overflow de Nomes de Hábitos: Aplicar CSS para que nomes de hábitos muito longos no dashboard não quebrem o layout do card (usando `ellipsis` para cortar o texto com "...").
+     [ ] Tarefa 1.3: Corrigir Overflow de Anotações: Garantir que textos muito longos em anotações (seja na timeline ou nas anotações gerais) respeitem os limites do seu contêiner, quebrando a linha corretamente.
+     [ ] Tarefa 1.4: Remover Contador de Sequência Global: Remover o contador de sequência do canto superior direito do dashboard, já que a informação já existe em cada card de hábito.
+
+ [ ] Módulo 2: Reorganização da Interface e UX
+     [ ] Tarefa 2.1: Separar Logs e Anotações Novamente: Reverter a unificação na página de detalhes. Voltar a ter duas seções distintas: uma para "Registros de Atividade" (os logs) e outra para "Anotações do Hábito".
+     [ ] Tarefa 2.2: Implementar Fechamento com a Tecla `ESC`: Adicionar um `event listener` global para que a tecla `ESC` feche os modais ativos (Ex: Novo Registro, Confirmação de Limpeza de Dados, etc.).
+     [ ] Tarefa 2.3: Recarregar a Página Automaticamente: Modificar as funções `handleConfirmModalConfirm` para que, após uma restauração de backup ou limpeza de dados bem-sucedida, a página seja recarregada automaticamente (`location.reload()`).
+
+#### Fase 2: Calendário e Registros Avançados
+
+O objetivo desta fase é aprimorar drasticamente a principal ferramenta de interação do usuário: o calendário e o modal de registro, tornando-os mais informativos e funcionais.
+
+ [ ] Módulo 3: Melhorias Visuais no Calendário
+     [ ] Tarefa 3.1: Adicionar Mini-Calendário no Dashboard: Em cada card de hábito no dashboard, incluir uma pequena visualização do calendário do mês atual, destacando os dias que foram registrados.
+     [ ] Tarefa 3.2: Destacar o Dia Atual: Modificar as três visualizações de calendário (mini-calendário do dashboard, mensal e anual) para que o dia de hoje seja sempre destacado com um círculo ou cor diferente.
+
+ [ ] Módulo 4: "Super Modal" de Registro de Atividade
+     [ ] Tarefa 4.1: Preencher Hora Atual Automaticamente: Ao abrir o modal de "Novo Registro", o campo de hora deve ser preenchido com a hora e o minuto atuais, em vez de "00:00".
+     [ ] Tarefa 4.2: Listar Registros do Dia: Dentro do modal de registro, adicionar uma nova área que lista todos os registros já feitos para aquele dia específico.
+     [ ] Tarefa 4.3: Implementar CRUD de Logs no Modal: Para cada registro listado na tarefa anterior, adicionar botões para "Editar" (permitindo alterar a hora) e "Excluir", tornando o modal uma central de gerenciamento completa para os registros daquele dia.
+
+#### Fase 3: Dashboard Inteligente e Configurações
+
+O objetivo desta fase é refinar a organização da aplicação, movendo funções administrativas para uma área dedicada e adicionando uma nova e poderosa ferramenta de visualização de anotações no dashboard.
+
+ [ ] Módulo 5: Central de Configurações
+     [ ] Tarefa 5.1: Criar o Botão de Configurações: Na barra lateral, substituir os botões "Backup", "Restaurar" e "Limpar Dados" por um único botão "Configurações", com um ícone de engrenagem.
+     [ ] Tarefa 5.2: Criar a Página/View de Configurações: Desenvolver uma nova view (página inteira) que será exibida ao clicar no botão de Configurações.
+     [ ] Tarefa 5.3: Mover as Funções de Dados: Realocar os botões e a funcionalidade de Backup, Restauração e Limpeza de Dados para dentro desta nova página de Configurações.
+
+ [ ] Módulo 6: Seção de "Feed de Anotações" no Dashboard
+     [ ] Tarefa 6.1: Criar a Estrutura da Seção: No dashboard, adicionar uma nova seção (por padrão, oculta) que servirá como um feed de todas as anotações.
+     [ ] Tarefa 6.2: Implementar Botão de Mostrar/Ocultar: Adicionar um botão no dashboard para controlar a visibilidade desta seção.
+     [ ] Tarefa 6.3: Desenvolver a Lógica de Agregação: Criar uma função que colete todas as anotações (gerais e de hábitos específicos) e as ordene cronologicamente. Cada anotação de hábito deve indicar de qual hábito ela veio (Ex: "Do hábito: Ler 10 páginas").
+     [ ] Tarefa 6.4: Salvar Preferência do Usuário: Usar o `localStorage` para salvar o estado (visível ou oculto) da seção de anotações, para que a escolha do usuário persista mesmo após recarregar a página.
