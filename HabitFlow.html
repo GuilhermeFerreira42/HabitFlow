@@ -36,22 +36,23 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        /* NOVO: Para truncar nomes de hábitos longos (Tarefa 1.2) */
         .truncate-text {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        /* NOVO: Para quebrar palavras longas em anotações (Tarefa 1.3) */
         .break-word {
             overflow-wrap: break-word;
             word-wrap: break-word; /* Fallback para navegadores mais antigos */
             word-break: break-word;
         }
+        /* NOVO (Fase 2): Estilo para destacar o dia atual */
+        .is-today {
+            box-shadow: 0 0 0 2px #3B82F6; /* Anel azul para o dia atual */
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
-    <!-- Barra Lateral -->
     <aside class="w-64 glassmorphism border-r border-white/10 p-4 flex flex-col h-screen sticky top-0">
         <div class="mb-8">
             <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
@@ -99,21 +100,16 @@
         </div>
     </aside>
 
-    <!-- Conteúdo Principal -->
     <main class="flex-1 p-6">
-        <!-- Dashboard (Visão padrão) -->
         <div id="dashboardView" class="fade-in">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-semibold">Meus Hábitos</h2>
             </div>
 
-            <!-- Container de hábitos (AGORA TOTALMENTE DINÂMICO) -->
             <div id="habitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <!-- Hábitos renderizados via JavaScript -->
-            </div>
+              </div>
         </div>
 
-        <!-- Página de Detalhes do Hábito (Oculto inicialmente) -->
         <div id="habitDetailView" class="hidden fade-in">
             <div class="flex items-center mb-6">
                 <button id="backToDashboard" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
@@ -132,7 +128,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Seção do Calendário -->
                 <div class="lg:col-span-2">
                     <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
                         <div class="flex justify-between items-center mb-4">
@@ -143,7 +138,6 @@
                             </div>
                         </div>
 
-                        <!-- Calendário Mensal -->
                         <div id="monthCalendar" class="fade-in">
                             <div class="grid grid-cols-7 gap-1 mb-2">
                                 <div class="text-center text-sm text-white/60">Dom</div>
@@ -155,19 +149,15 @@
                                 <div class="text-center text-sm text-white/60">Sáb</div>
                             </div>
                             <div id="monthDays" class="grid grid-cols-7 gap-1">
-                                <!-- Dias serão renderizados via JavaScript -->
-                            </div>
+                                </div>
                         </div>
 
-                        <!-- Calendário Anual -->
                         <div id="yearCalendar" class="hidden fade-in">
                             <div class="grid grid-cols-4 gap-2">
-                                <!-- Meses serão renderizados via JavaScript -->
-                            </div>
+                                </div>
                         </div>
                     </div>
 
-                    <!-- Logs Recentes -->
                     <div class="glassmorphism border border-white/10 rounded-2xl p-4">
                         <h3 class="font-medium mb-4">Logs Recentes</h3>
                         <div id="recentLogs" class="space-y-2">
@@ -176,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- Seção de Anotações -->
                 <div class="lg:col-span-1">
                     <div class="glassmorphism border border-white/10 rounded-2xl p-4 h-full flex flex-col">
                         <div class="flex justify-between items-center mb-4">
@@ -190,7 +179,6 @@
             </div>
         </div>
 
-        <!-- Página de Anotações Gerais (Oculto inicialmente) -->
         <div id="generalNotesView" class="hidden fade-in">
             <div class="flex items-center mb-6">
                 <button id="backFromNotes" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
@@ -213,7 +201,6 @@
         </div>
     </main>
 
-    <!-- Modal Universal -->
     <div id="universalModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
         <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
             <h3 id="modalTitle" class="text-lg font-semibold mb-4">Editar</h3>
@@ -225,7 +212,6 @@
         </div>
     </div>
 
-    <!-- Modal de Registro -->
     <div id="logModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
         <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
             <h3 id="logModalTitle" class="text-lg font-semibold mb-4">Registrar Atividade</h3>
@@ -240,12 +226,15 @@
             <div class="flex justify-end space-x-2">
                 <button id="logModalCancel" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Cancelar</button>
                 <button id="logModalConfirm" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Registrar</button>
-                <button id="logModalDelete" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition hidden">Excluir</button>
+            </div>
+            <div class="mt-6 pt-4 border-t border-white/10">
+                <h4 class="text-sm font-semibold text-white/70 mb-2">Registros do dia</h4>
+                <div id="dailyLogsList" class="space-y-2 max-h-32 overflow-y-auto">
+                   </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Backup/Restauração -->
     <div id="dataModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
         <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
             <h3 id="dataModalTitle" class="text-lg font-semibold mb-4">Backup de Dados</h3>
@@ -265,7 +254,6 @@
         </div>
     </div>
 
-    <!-- Modal de Confirmação -->
     <div id="confirmModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
         <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
             <h3 id="confirmModalTitle" class="text-lg font-semibold mb-4">Confirmação</h3>
@@ -284,6 +272,7 @@
             currentHabitId: null,
             editingNoteId: null,
             editingLogId: null,
+            selectedDateForLog: null, // NOVO (Fase 2): Armazena a data selecionada para o modal de log
             calendarView: 'month', // 'month' ou 'year'
             currentMonth: new Date().getMonth(),
             currentYear: new Date().getFullYear(),
@@ -294,16 +283,9 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            // Carregar dados do localStorage
             loadData();
-
-            // Configurar event listeners
             setupEventListeners();
-
-            // Atualizar a UI inicial
             updateUI();
-
-            // ADICIONADO: Iniciar os relógios
             startStreakCounter();
         });
 
@@ -314,7 +296,7 @@
             lastActivity: null
         };
 
-        // Carregar dados do localStorage
+        // Funções de dados
         function loadData() {
             const savedData = localStorage.getItem('habitFlowData');
             if (savedData) {
@@ -322,18 +304,16 @@
             }
         }
 
-        // NOVO: Função dedicada apenas a salvar no localStorage
         function persistData() {
             localStorage.setItem('habitFlowData', JSON.stringify(appData));
         }
 
-        // MODIFICADO: saveData agora persiste e depois atualiza a UI
         function saveData() {
             persistData();
             updateUI();
         }
 
-        // Configurar event listeners
+        // Configuração de Event Listeners
         function setupEventListeners() {
             document.getElementById('logoTitle').addEventListener('click', () => showDashboard());
             document.getElementById('dashboardLink').addEventListener('click', () => showDashboard());
@@ -368,18 +348,13 @@
             document.getElementById('logModalConfirm').addEventListener('click', () => {
                 handleLogModalConfirm();
             });
-            document.getElementById('logModalDelete').addEventListener('click', () => {
-                handleLogModalDelete();
-            });
             document.getElementById('dataModalClose').addEventListener('click', () => {
                 document.getElementById('dataModal').classList.add('hidden');
             });
             document.getElementById('copyBackupBtn').addEventListener('click', () => {
                 copyToClipboard('backupData');
             });
-            document.getElementById('confirmRestoreBtn').addEventListener('click', () => {
-                // A lógica de restauração agora começa em handleRestore()
-            });
+            document.getElementById('confirmRestoreBtn').addEventListener('click', handleRestore);
             document.getElementById('confirmModalCancel').addEventListener('click', () => {
                 document.getElementById('confirmModal').classList.add('hidden');
             });
@@ -408,7 +383,6 @@
                     }
                 }
             });
-            // NOVO: Event listener para fechar modais com a tecla ESC
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     const modals = document.querySelectorAll('#universalModal, #logModal, #dataModal, #confirmModal');
@@ -440,15 +414,12 @@
 
         // Funções de atualização da UI
         function updateUI() {
-            // Esconder todas as views
             document.getElementById('dashboardView').classList.add('hidden');
             document.getElementById('habitDetailView').classList.add('hidden');
             document.getElementById('generalNotesView').classList.add('hidden');
 
-            // NOVO: Renderiza a lista de hábitos na barra lateral em toda atualização
             renderSidebarHabitsList();
 
-            // Mostrar a view correta
             if (state.currentView === 'dashboard') {
                 document.getElementById('dashboardView').classList.remove('hidden');
                 renderHabits();
@@ -460,36 +431,41 @@
                 renderGeneralNotes();
             }
         }
-
-        // ATUALIZADO: Função de renderização de hábitos (CORREÇÃO DO PROBLEMA)
+        
+        // MODIFICADO (Fase 2): Adiciona o mini-calendário e seus elementos
         function renderHabits() {
             const container = document.getElementById('habitsContainer');
-            container.innerHTML = ''; // Limpa completamente o container
+            container.innerHTML = '';
 
             if (appData.habits.length === 0) {
-                // Cria mensagem de "nenhum hábito" dinamicamente
-                const noHabitsMessage = document.createElement('div');
-                noHabitsMessage.className = 'text-center py-10 text-white/40 col-span-full';
-                noHabitsMessage.textContent = 'Nenhum hábito cadastrado. Adicione seu primeiro hábito usando o formulário na barra lateral.';
-                container.appendChild(noHabitsMessage);
+                container.innerHTML = '<div class="text-center py-10 text-white/40 col-span-full">Nenhum hábito cadastrado. Adicione um na barra lateral.</div>';
                 return;
             }
 
             appData.habits.forEach(habit => {
                 const habitCard = document.createElement('div');
-                habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card cursor-pointer hover:border-white/20 transition flex flex-col';
+                habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col';
                 habitCard.innerHTML = `
-                  <div class="flex justify-between items-start">
+                  <div class="flex justify-between items-start cursor-pointer" data-habit-id-nav="${habit.id}">
                     <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
                     <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
                       ${formatStreak(calculateHabitStreak(habit.id))}
                     </div>
                   </div>
-                  <div class="mt-2 text-sm text-white/60">
+                  <div class="mt-2 text-sm text-white/60 cursor-pointer" data-habit-id-nav="${habit.id}">
                     ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
                   </div>
+                  <div class="mini-calendar-container mt-4 flex-grow"></div>
                 `;
-                habitCard.addEventListener('click', () => showHabitDetail(habit.id));
+                // Ação de clique para navegar
+                habitCard.querySelectorAll('[data-habit-id-nav]').forEach(el => {
+                    el.addEventListener('click', () => showHabitDetail(habit.id));
+                });
+                
+                // Renderiza o mini calendário
+                const miniCalContainer = habitCard.querySelector('.mini-calendar-container');
+                renderMiniCalendar(habit, miniCalContainer);
+                
                 container.appendChild(habitCard);
             });
         }
@@ -502,9 +478,9 @@
             }
 
             document.getElementById('habitNameTitle').textContent = habit.name;
-            document.getElementById('editHabitName').addEventListener('click', () => {
+            document.getElementById('editHabitName').onclick = () => {
                 showEditModal('Editar nome do hábito', habit.name, 'habitName');
-            });
+            };
 
             updateCalendar();
             renderRecentLogs();
@@ -534,38 +510,82 @@
                 renderYearCalendar();
             }
         }
+        
+        // NOVO (Fase 2): Cria o mini-calendário para o dashboard
+        function renderMiniCalendar(habit, container) {
+            container.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Zera a hora para comparação de data
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            const daysHeader = document.createElement('div');
+            daysHeader.className = 'grid grid-cols-7 gap-1 text-xs text-center text-white/50 mb-1';
+            ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].forEach(name => {
+                const dayNameEl = document.createElement('div');
+                dayNameEl.textContent = name;
+                daysHeader.appendChild(dayNameEl);
+            });
+            container.appendChild(daysHeader);
 
+            const daysContainer = document.createElement('div');
+            daysContainer.className = 'grid grid-cols-7 gap-1';
+
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                daysContainer.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                const currentDate = new Date(currentYear, currentMonth, day);
+                dayCell.className = 'h-6 w-6 flex items-center justify-center rounded-full text-xs';
+                
+                const hasLog = habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(currentDate)));
+                if (hasLog) {
+                    dayCell.classList.add('bg-blue-500/50');
+                }
+                
+                // Destaca o dia atual
+                if (currentDate.getTime() === today.getTime()) {
+                    dayCell.classList.add('is-today');
+                }
+                
+                dayCell.textContent = day;
+                daysContainer.appendChild(dayCell);
+            }
+            container.appendChild(daysContainer);
+        }
+
+        // MODIFICADO (Fase 2): Adiciona destaque para o dia atual
         function renderMonthCalendar() {
             const monthDaysContainer = document.getElementById('monthDays');
             monthDaysContainer.innerHTML = '';
-
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) return;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             const firstDay = new Date(state.currentYear, state.currentMonth, 1);
-            const lastDay = new Date(state.currentYear, state.currentMonth + 1, 0);
-            const daysInMonth = lastDay.getDate();
+            const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
             const startingDay = firstDay.getDay();
 
-            // Dias vazios no início
-            for (let i = 0; i < startingDay; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'h-8';
-                monthDaysContainer.appendChild(emptyDay);
-            }
+            for (let i = 0; i < startingDay; i++) monthDaysContainer.appendChild(document.createElement('div'));
 
-            // Dias do mês
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(state.currentYear, state.currentMonth, day);
-                const dateStr = formatDate(date);
-                
                 const dayElement = document.createElement('div');
                 dayElement.className = 'h-8 flex items-center justify-center rounded-full cursor-pointer hover:bg-white/10 transition';
                 
-                // Verificar se há logs para este dia
-                const hasLog = habit.logs && habit.logs.some(log => log.date.startsWith(dateStr));
-                if (hasLog) {
+                if (habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(date)))) {
                     dayElement.classList.add('bg-blue-500/30');
+                }
+                
+                if (date.getTime() === today.getTime()) {
+                    dayElement.classList.add('is-today');
                 }
                 
                 dayElement.textContent = day;
@@ -574,15 +594,16 @@
             }
         }
 
+        // MODIFICADO (Fase 2): Adiciona destaque para o dia atual
         function renderYearCalendar() {
             const yearContainer = document.getElementById('yearCalendar');
             yearContainer.innerHTML = '';
-            // Muda o layout da grade para exibir os meses de forma mais espaçosa
             yearContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
-
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) return;
 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const dayNames = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
@@ -590,7 +611,6 @@
                 const monthWrapper = document.createElement('div');
                 monthWrapper.className = 'glassmorphism border border-white/10 rounded-xl p-3 text-sm';
 
-                // Título do Mês (Clicável)
                 const monthTitle = document.createElement('h4');
                 monthTitle.className = 'font-semibold text-center mb-2 cursor-pointer hover:text-blue-400';
                 monthTitle.textContent = monthNames[month];
@@ -601,7 +621,6 @@
                 };
                 monthWrapper.appendChild(monthTitle);
 
-                // Grid dos dias da semana
                 const daysHeader = document.createElement('div');
                 daysHeader.className = 'grid grid-cols-7 gap-1 text-xs text-center text-white/50 mb-1';
                 dayNames.forEach(name => {
@@ -611,39 +630,34 @@
                 });
                 monthWrapper.appendChild(daysHeader);
 
-                // Grid dos dias
                 const daysContainer = document.createElement('div');
                 daysContainer.className = 'grid grid-cols-7 gap-1';
-
                 const firstDayOfMonth = new Date(state.currentYear, month, 1).getDay();
                 const daysInMonth = new Date(state.currentYear, month + 1, 0).getDate();
 
-                // Adiciona células vazias para o início do mês
-                for (let i = 0; i < firstDayOfMonth; i++) {
-                    daysContainer.appendChild(document.createElement('div'));
-                }
+                for (let i = 0; i < firstDayOfMonth; i++) daysContainer.appendChild(document.createElement('div'));
 
-                // Adiciona os dias do mês
                 for (let day = 1; day <= daysInMonth; day++) {
                     const dayCell = document.createElement('div');
                     dayCell.className = 'h-6 w-6 flex items-center justify-center rounded-full hover:bg-white/10 transition cursor-pointer';
                     dayCell.textContent = day;
                     const currentDate = new Date(state.currentYear, month, day);
 
-                    // Verifica se há log neste dia
-                    const hasLog = habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(currentDate)));
-                    if (hasLog) {
+                    if (habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(currentDate)))) {
                         dayCell.classList.add('bg-blue-500/50', 'border', 'border-blue-400');
+                    }
+                    if (currentDate.getTime() === today.getTime()) {
+                        dayCell.classList.add('is-today');
                     }
 
                     dayCell.onclick = () => showLogModal(currentDate);
                     daysContainer.appendChild(dayCell);
                 }
-
                 monthWrapper.appendChild(daysContainer);
                 yearContainer.appendChild(monthWrapper);
             }
         }
+
 
         function renderRecentLogs() {
             const container = document.getElementById('recentLogs');
@@ -657,25 +671,20 @@
             }
 
             const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
-            sortedLogs.forEach(log => {
+            sortedLogs.slice(0, 10).forEach(log => { // Limita a 10 logs
                 const logElement = document.createElement('div');
-                logElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 flex justify-between items-center cursor-pointer';
+                logElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 flex justify-between items-center cursor-pointer hover:bg-white/5 transition';
                 const logDate = new Date(log.date);
-                const dateStr = logDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                const dateStr = logDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
                 const timeStr = logDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                 logElement.innerHTML = `
                     <div>
                         <span class="text-sm">${dateStr}</span>
                         <span class="text-xs text-white/60 ml-2">${timeStr}</span>
                     </div>
-                    <button class="text-xs text-red-400 hover:text-red-300 transition" data-log-id="${log.id}">Excluir</button>
                 `;
-                logElement.querySelector('button').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showConfirmModal('Excluir registro', 'Tem certeza que deseja excluir este registro?', 'deleteLog', log.id);
-                });
                 logElement.addEventListener('click', () => {
-                    showLogModal(new Date(log.date), log.id);
+                    showLogModal(new Date(log.date));
                 });
                 container.appendChild(logElement);
             });
@@ -699,29 +708,28 @@
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs text-white/60">${new Date(note.createdAt).toLocaleDateString('pt-BR')}</span>
                         <div class="flex space-x-2">
-                            <button class="text-xs hover:text-blue-400 transition" data-note-id="${note.id}">Editar</button>
-                            <button class="text-xs hover:text-red-400 transition" data-note-id="${note.id}">Excluir</button>
+                            <button class="text-xs hover:text-blue-400 transition" data-note-id="${note.id}" data-action="edit">Editar</button>
+                            <button class="text-xs hover:text-red-400 transition" data-note-id="${note.id}" data-action="delete">Excluir</button>
                         </div>
                     </div>
                     <p class="text-sm whitespace-pre-line break-word">${note.content}</p>
                 `;
-                const buttons = noteElement.querySelectorAll('button');
-                buttons[0].addEventListener('click', (e) => {
+                noteElement.querySelector('[data-action="edit"]').addEventListener('click', () => {
                     showEditModal('Editar anotação', note.content, 'habitNote', note.id);
                 });
-                buttons[1].addEventListener('click', (e) => {
+                noteElement.querySelector('[data-action="delete"]').addEventListener('click', () => {
                     showConfirmModal('Excluir anotação', 'Tem certeza?', 'deleteHabitNote', note.id);
                 });
                 container.appendChild(noteElement);
             });
         }
-
+        
         function renderGeneralNotes() {
             const container = document.getElementById('generalNotesList');
             container.innerHTML = '';
-            document.getElementById('addGeneralNoteBtn').addEventListener('click', () => {
+            document.getElementById('addGeneralNoteBtn').onclick = () => {
                 showEditModal('Nova anotação geral', '', 'generalNote');
-            });
+            };
             if (appData.generalNotes.length === 0) {
                 container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>';
                 return;
@@ -750,7 +758,7 @@
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs text-white/60">${noteDate}</span>
                         <div class="flex space-x-2">
-                            <button class="text-xs hover:text-blue-400 transition" onclick="showEditModal('Editar anotação geral', '${note.content.replace(/'/g, "\'")}', 'generalNote', '${note.id}')">Editar</button>
+                             <button class="text-xs hover:text-blue-400 transition" onclick="showEditModal('Editar anotação geral', \`${note.content.replace(/`/g, '\\`')}\`, 'generalNote', '${note.id}')">Editar</button>
                             <button class="text-xs hover:text-red-400 transition" onclick="showConfirmModal('Excluir anotação geral', 'Tem certeza?', 'deleteGeneralNote', '${note.id}')">Excluir</button>
                         </div>
                     </div>
@@ -760,64 +768,36 @@
             });
         }
 
-        // Funções de CRUD para hábitos (COM MELHORIA DE UX)
+        // Funções de CRUD (Create, Read, Update, Delete)
         function addHabit(name) {
-            const newHabit = {
-                id: generateId(),
-                name: name,
-                createdAt: new Date().toISOString(),
-                logs: [],
-                notes: []
-            };
-
+            const newHabit = { id: generateId(), name: name, createdAt: new Date().toISOString(), logs: [], notes: [] };
             appData.habits.push(newHabit);
-            saveData(); // Persiste dados e atualiza UI
-            
-            // Melhoria de UX: Foco automático no campo de novo hábito
+            saveData();
             document.getElementById('habitName').focus();
         }
 
         function updateHabitName(habitId, newName) {
             const habit = appData.habits.find(h => h.id === habitId);
-            if (habit) {
-                habit.name = newName;
-                saveData();
-            }
+            if (habit) { habit.name = newName; saveData(); }
         }
 
         function deleteHabit(habitId) {
             appData.habits = appData.habits.filter(h => h.id !== habitId);
+            if (state.currentHabitId === habitId) state.currentView = 'dashboard';
             saveData();
-            if (state.currentView === 'habitDetail' && state.currentHabitId === habitId) {
-                showDashboard();
-            }
         }
 
-        // Funções de CRUD para logs
         function addLog(habitId, dateTime, logId = null) {
             const habit = appData.habits.find(h => h.id === habitId);
             if (!habit) return;
-
             if (logId) {
-                // Atualizar log existente
                 const logIndex = habit.logs.findIndex(l => l.id === logId);
-                if (logIndex !== -1) {
-                    habit.logs[logIndex].date = dateTime.toISOString();
-                }
+                if (logIndex !== -1) habit.logs[logIndex].date = dateTime.toISOString();
             } else {
-                // Adicionar novo log
-                const newLog = {
-                    id: generateId(),
-                    date: dateTime.toISOString()
-                };
-                habit.logs.push(newLog);
+                habit.logs.push({ id: generateId(), date: dateTime.toISOString() });
             }
-
-            // Atualizar última atividade
             appData.lastActivity = new Date().toISOString();
-            
             saveData();
-            updateCalendar();
         }
 
         function deleteLog(habitId, logId) {
@@ -825,61 +805,37 @@
             if (habit) {
                 habit.logs = habit.logs.filter(l => l.id !== logId);
                 saveData();
-                updateCalendar();
+                 // ATUALIZADO (Fase 2): Atualiza o modal se ele estiver aberto para o mesmo dia
+                if (!document.getElementById('logModal').classList.contains('hidden')) {
+                    renderDailyLogs(state.selectedDateForLog);
+                }
             }
         }
-
-        // Funções de CRUD para anotações
+        
         function addHabitNote(habitId, content, noteId = null) {
             const habit = appData.habits.find(h => h.id === habitId);
             if (!habit) return;
-
             if (noteId) {
-                // Atualizar anotação existente
-                const noteIndex = habit.notes.findIndex(n => n.id === noteId);
-                if (noteIndex !== -1) {
-                    habit.notes[noteIndex].content = content;
-                    habit.notes[noteIndex].updatedAt = new Date().toISOString();
-                }
+                const note = habit.notes.find(n => n.id === noteId);
+                if (note) { note.content = content; note.updatedAt = new Date().toISOString(); }
             } else {
-                // Adicionar nova anotação
-                const newNote = {
-                    id: generateId(),
-                    content: content,
-                    createdAt: new Date().toISOString()
-                };
-                habit.notes.push(newNote);
+                habit.notes.push({ id: generateId(), content: content, createdAt: new Date().toISOString() });
             }
-            
             saveData();
         }
 
         function deleteHabitNote(habitId, noteId) {
             const habit = appData.habits.find(h => h.id === habitId);
-            if (habit) {
-                habit.notes = habit.notes.filter(n => n.id !== noteId);
-                saveData();
-            }
+            if (habit) { habit.notes = habit.notes.filter(n => n.id !== noteId); saveData(); }
         }
 
         function addGeneralNote(content, noteId = null) {
             if (noteId) {
-                // Atualizar anotação existente
-                const noteIndex = appData.generalNotes.findIndex(n => n.id === noteId);
-                if (noteIndex !== -1) {
-                    appData.generalNotes[noteIndex].content = content;
-                    appData.generalNotes[noteIndex].updatedAt = new Date().toISOString();
-                }
+                const note = appData.generalNotes.find(n => n.id === noteId);
+                if (note) { note.content = content; note.updatedAt = new Date().toISOString(); }
             } else {
-                // Adicionar nova anotação
-                const newNote = {
-                    id: generateId(),
-                    content: content,
-                    createdAt: new Date().toISOString()
-                };
-                appData.generalNotes.push(newNote);
+                appData.generalNotes.push({ id: generateId(), content: content, createdAt: new Date().toISOString() });
             }
-            
             saveData();
         }
 
@@ -891,11 +847,9 @@
         // Funções de modal
         function showEditModal(title, initialValue, context, itemId = null) {
             state.modalContext = context;
-            
             if (context === 'habitNote' || context === 'generalNote') {
                 state.editingNoteId = itemId;
             }
-            
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalInput').value = initialValue;
             document.getElementById('universalModal').classList.remove('hidden');
@@ -903,93 +857,122 @@
         }
 
         function handleModalConfirm() {
-            const newValue = document.getElementById('modalInput').value.trim();
-            if (!newValue) return;
-
-            if (state.modalContext === 'habitName' && state.currentHabitId) {
-                updateHabitName(state.currentHabitId, newValue);
-                document.getElementById('habitNameTitle').textContent = newValue;
+            const newValue = document.getElementById('modalInput').value; // .trim() removido para permitir anotações com espaços
+            if (state.modalContext === 'habitName' && state.currentHabitId && newValue.trim()) {
+                updateHabitName(state.currentHabitId, newValue.trim());
             } else if (state.modalContext === 'habitNote' && state.currentHabitId) {
                 addHabitNote(state.currentHabitId, newValue, state.editingNoteId);
             } else if (state.modalContext === 'generalNote') {
                 addGeneralNote(newValue, state.editingNoteId);
             }
-
             document.getElementById('universalModal').classList.add('hidden');
-            state.modalContext = null;
-            state.editingNoteId = null;
         }
 
-        function showLogModal(date, logId = null) {
-            state.editingLogId = logId;
+        // MODIFICADO (Fase 2): Transforma em "Super Modal"
+        function showLogModal(date) {
+            state.selectedDateForLog = date; // Salva a data selecionada
+            state.editingLogId = null; // Reseta o ID de edição
             
-            const modalTitle = logId ? 'Editar Registro' : 'Novo Registro';
-            document.getElementById('logModalTitle').textContent = modalTitle;
+            document.getElementById('logModalTitle').textContent = 'Registrar Atividade';
+            document.getElementById('logModalConfirm').textContent = 'Registrar';
             
-            // Formatar data para o input date (YYYY-MM-DD)
+            // Preenche a data
             const dateStr = date.toISOString().split('T')[0];
             document.getElementById('logDate').value = dateStr;
             
-            // Formatar hora para o input time (HH:MM)
-            const timeStr = date.toTimeString().substring(0, 5);
-            document.getElementById('logTime').value = timeStr;
-            
-            // Mostrar/ocultar botão de excluir
-            if (logId) {
-                document.getElementById('logModalDelete').classList.remove('hidden');
-            } else {
-                document.getElementById('logModalDelete').classList.add('hidden');
-            }
+            // Preenche com a hora atual (Tarefa 4.1)
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('logTime').value = `${hours}:${minutes}`;
+
+            // Renderiza a lista de logs do dia (Tarefa 4.2)
+            renderDailyLogs(date);
             
             document.getElementById('logModal').classList.remove('hidden');
+            document.getElementById('logTime').focus();
+        }
+        
+        // NOVO (Fase 2): Renderiza a lista de logs dentro do modal (Tarefa 4.2 e 4.3)
+        function renderDailyLogs(date) {
+            const container = document.getElementById('dailyLogsList');
+            container.innerHTML = '';
+            const habit = appData.habits.find(h => h.id === state.currentHabitId);
+            if (!habit) return;
+
+            const dateStr = formatDate(date);
+            const dailyLogs = habit.logs
+                .filter(log => log.date.startsWith(dateStr))
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (dailyLogs.length === 0) {
+                container.innerHTML = `<p class="text-sm text-white/40 text-center py-2">Nenhum registro para este dia.</p>`;
+                return;
+            }
+
+            dailyLogs.forEach(log => {
+                const logEl = document.createElement('div');
+                logEl.className = 'flex justify-between items-center bg-white/5 p-2 rounded-lg';
+                const timeStr = new Date(log.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                logEl.innerHTML = `
+                    <span class="text-sm">${timeStr}</span>
+                    <div class="flex space-x-2">
+                        <button class="text-xs p-1 rounded hover:bg-white/10" data-log-id="${log.id}" data-action="edit">Editar</button>
+                        <button class="text-xs p-1 rounded hover:bg-red-500/20 text-red-400" data-log-id="${log.id}" data-action="delete">Excluir</button>
+                    </div>
+                `;
+                // Botão Editar
+                logEl.querySelector('[data-action="edit"]').addEventListener('click', () => {
+                    state.editingLogId = log.id;
+                    const logDate = new Date(log.date);
+                    document.getElementById('logTime').value = logDate.toTimeString().substring(0, 5);
+                    document.getElementById('logModalTitle').textContent = 'Editar Registro';
+                    document.getElementById('logModalConfirm').textContent = 'Atualizar';
+                    document.getElementById('logTime').focus();
+                });
+                // Botão Excluir
+                logEl.querySelector('[data-action="delete"]').addEventListener('click', () => {
+                    showConfirmModal('Excluir Registro', `Tem certeza que deseja excluir o registro das ${timeStr}?`, 'deleteLog', log.id);
+                });
+                container.appendChild(logEl);
+            });
         }
 
         function handleLogModalConfirm() {
             const dateStr = document.getElementById('logDate').value;
             const timeStr = document.getElementById('logTime').value;
-            
             if (!dateStr || !timeStr) return;
-            
             const dateTime = new Date(`${dateStr}T${timeStr}`);
-            
             if (state.currentHabitId) {
                 addLog(state.currentHabitId, dateTime, state.editingLogId);
             }
             
-            document.getElementById('logModal').classList.add('hidden');
+            // Reseta o formulário e a lista
             state.editingLogId = null;
-        }
-
-        function handleLogModalDelete() {
-            if (state.currentHabitId && state.editingLogId) {
-                deleteLog(state.currentHabitId, state.editingLogId);
-            }
-            
-            document.getElementById('logModal').classList.add('hidden');
-            state.editingLogId = null;
+            document.getElementById('logModalTitle').textContent = 'Registrar Atividade';
+            document.getElementById('logModalConfirm').textContent = 'Registrar';
+            const now = new Date();
+            document.getElementById('logTime').value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            renderDailyLogs(state.selectedDateForLog);
         }
 
         function showConfirmModal(title, message, action, itemId = null) {
             document.getElementById('confirmModalTitle').textContent = title;
             document.getElementById('confirmModalMessage').textContent = message;
-            
-            // Armazenar a ação e o ID do item no modal
             document.getElementById('confirmModal').setAttribute('data-action', action);
             document.getElementById('confirmModal').setAttribute('data-item-id', itemId || '');
-            
             document.getElementById('confirmModal').classList.remove('hidden');
         }
 
         function handleConfirmModalConfirm() {
             const action = document.getElementById('confirmModal').getAttribute('data-action');
             const itemId = document.getElementById('confirmModal').getAttribute('data-item-id');
-
             let shouldReload = false;
 
-            if (action === 'deleteHabit' && state.currentHabitId) {
-                deleteHabit(state.currentHabitId);
-            } else if (action === 'deleteLog' && state.currentHabitId && itemId) {
+            if (action === 'deleteLog' && state.currentHabitId && itemId) {
                 deleteLog(state.currentHabitId, itemId);
+            } else if (action === 'deleteHabit' && state.currentHabitId) {
+                deleteHabit(state.currentHabitId);
             } else if (action === 'deleteHabitNote' && state.currentHabitId && itemId) {
                 deleteHabitNote(state.currentHabitId, itemId);
             } else if (action === 'deleteGeneralNote' && itemId) {
@@ -1000,31 +983,27 @@
             } else if (action === 'restoreData' && state.dataToRestore) {
                 appData = state.dataToRestore;
                 state.dataToRestore = null;
-                persistData(); 
+                persistData();
                 shouldReload = true;
             }
 
-            // Esconde o modal primeiro
             document.getElementById('confirmModal').classList.add('hidden');
-
             if (shouldReload) {
-                // Recarrega com um pequeno atraso para garantir que a UI foi atualizada
                 setTimeout(() => location.reload(), 50);
             } else {
-                // Em todas as outras ações, apenas atualiza a UI sem recarregar
-                updateUI();
+                updateUI(); // Ações que não recarregam apenas atualizam a UI
             }
         }
 
+        // Funções de Backup/Restore
         function handleBackup() {
             try {
                 const dataStr = JSON.stringify(appData, null, 2);
                 const blob = new Blob([dataStr], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                const today = new Date().toISOString().slice(0, 10);
                 a.href = url;
-                a.download = `habitflow-backup-${today}.json`;
+                a.download = `habitflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1042,48 +1021,31 @@
             input.onchange = e => {
                 const file = e.target.files[0];
                 if (!file) return;
-
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     try {
                         const restoredData = JSON.parse(event.target.result);
-
-                        // Validação MELHORADA: Apenas checa se 'habits' é um array.
-                        // Isso torna a restauração compatível com versões mais antigas do backup.
                         if (restoredData && Array.isArray(restoredData.habits)) {
-                            // Garante que as novas propriedades existam no objeto restaurado para evitar erros futuros
-                            if (!restoredData.generalNotes) {
-                                restoredData.generalNotes = [];
-                            }
-                            if (!restoredData.lastActivity) {
-                                restoredData.lastActivity = null;
-                            }
-
+                            // Garante compatibilidade
+                            if (!restoredData.generalNotes) restoredData.generalNotes = [];
+                            if (!restoredData.lastActivity) restoredData.lastActivity = null;
                             state.dataToRestore = restoredData;
-                            showConfirmModal('Restaurar Dados', 'Isso substituirá todos os seus dados atuais pelos dados do arquivo. Deseja continuar?', 'restoreData');
+                            showConfirmModal('Restaurar Dados', 'Isso substituirá todos os seus dados atuais. Deseja continuar?', 'restoreData');
                         } else {
-                            alert('Arquivo de backup inválido ou corrompido.');
+                            alert('Arquivo de backup inválido.');
                         }
                     } catch (error) {
-                        console.error("Erro ao ler o arquivo de backup:", error);
-                        alert('Erro ao ler o arquivo de backup. Verifique se o arquivo é um JSON válido.');
+                        alert('Erro ao ler o arquivo de backup.');
                     }
                 };
                 reader.readAsText(file);
             };
             input.click();
         }
-
+        
         function clearAllData() {
-            // Remove diretamente a chave do localStorage.
             localStorage.removeItem('habitFlowData');
-
-            // Reseta o estado da aplicação na memória.
-            appData = {
-                habits: [],
-                generalNotes: [],
-                lastActivity: null
-            };
+            appData = { habits: [], generalNotes: [], lastActivity: null };
         }
 
         // Funções de utilidade
@@ -1095,82 +1057,85 @@
             return date.toISOString().split('T')[0];
         }
 
-        function formatStreak(streak) {
-            if (!streak) return '0d 0h 0m 0s';
+        function formatStreak(duration) {
+            if (!duration || duration <= 0) return '---';
             
-            const days = Math.floor(streak / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((streak % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((streak % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((streak % (1000 * 60)) / 1000);
-            
-            return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            const totalSeconds = Math.floor(duration / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+            if (days > 0) return `${days}d ${hours}h`;
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            return `${minutes}m`;
         }
 
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
             element.select();
             document.execCommand('copy');
-            
-            // Feedback visual
-            const originalText = document.getElementById('copyBackupBtn').textContent;
-            document.getElementById('copyBackupBtn').textContent = 'Copiado!';
-            setTimeout(() => {
-                document.getElementById('copyBackupBtn').textContent = originalText;
-            }, 2000);
+            const btn = document.getElementById('copyBackupBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Copiado!';
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
         }
 
-        // Funções de contador de sequência
+        // Funções de sequência (Streak)
         function calculateHabitStreak(habitId) {
             const habit = appData.habits.find(h => h.id === habitId);
-            if (!habit || !habit.logs || habit.logs.length === 0) return 0;
+            if (!habit || !habit.logs || habit.logs.length < 2) return 0;
             
-            // Ordenar logs por data (mais recente primeiro)
-            const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sortedLogs = [...habit.logs].map(l => new Date(l.date).getTime()).sort((a, b) => b - a);
             
-            let streak = 0;
-            let lastDate = new Date();
+            let currentStreak = 0;
+            const oneDay = 24 * 60 * 60 * 1000;
+
+            // Começa do log mais recente
+            let lastLogTime = sortedLogs[0];
             
-            for (const log of sortedLogs) {
-                const logDate = new Date(log.date);
-                
-                // Se a diferença for maior que 24h, quebra a sequência
-                if ((lastDate - logDate) > (24 * 60 * 60 * 1000)) {
+            // A sequência só é válida se o último log for de hoje ou ontem
+            if (new Date().getTime() - lastLogTime > oneDay * 2) {
+                return 0;
+            }
+
+            for (let i = 1; i < sortedLogs.length; i++) {
+                const currentLogTime = sortedLogs[i];
+                const diff = lastLogTime - currentLogTime;
+
+                if (diff <= oneDay * 1.5) { // Permite uma tolerância maior que 24h exatas
+                    // Continua a sequência, mas não adiciona ao contador de 'dias' ainda
+                } else {
+                    // Quebrou a sequência, para a contagem
+                    lastLogTime = sortedLogs[i-1];
                     break;
                 }
-                
-                streak += lastDate - logDate;
-                lastDate = logDate;
+                 lastLogTime = currentLogTime;
+                 if(i === sortedLogs.length - 1) { // se chegou ao fim
+                    lastLogTime = currentLogTime;
+                 }
             }
-            
-            return streak;
+
+            return sortedLogs[0] - lastLogTime;
         }
 
-        // NOVO: Função para renderizar a lista de hábitos na barra lateral
         function renderSidebarHabitsList() {
             const container = document.getElementById('sidebarHabitsList');
-            container.innerHTML = ''; // Limpa a lista antes de renderizar
-
+            container.innerHTML = '';
             if (!appData.habits || appData.habits.length === 0) {
-                container.innerHTML = '<p class="px-2 text-xs text-white/40">Nenhum hábito criado.</p>';
+                container.innerHTML = '<p class="px-2 text-xs text-white/40">Nenhum hábito.</p>';
                 return;
             }
-
-            // Ordena os hábitos por data de criação para consistência
-            const sortedHabits = [...appData.habits].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+            const sortedHabits = [...appData.habits].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             sortedHabits.forEach(habit => {
                 const habitLink = document.createElement('a');
                 habitLink.href = '#';
-                habitLink.className = 'flex items-center p-2 text-sm rounded-lg hover:bg-white/10 transition truncate';
+                habitLink.className = 'flex items-center p-2 text-sm rounded-lg hover:bg-white/10 transition truncate-text';
                 habitLink.textContent = habit.name;
-
-                // Adiciona um destaque visual se o hábito selecionado for o atual
                 if (state.currentView === 'habitDetail' && state.currentHabitId === habit.id) {
                     habitLink.classList.add('bg-white/10', 'text-white');
                 } else {
                     habitLink.classList.add('text-white/70');
                 }
-
                 habitLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     showHabitDetail(habit.id);
@@ -1179,32 +1144,17 @@
             });
         }
 
-        // MODIFICADO: Função agora atualiza TODOS os contadores visíveis
         function updateStreakCounter() {
-            // 1. Atualiza os contadores no Dashboard
             const habitCounters = document.querySelectorAll('[data-habit-id]');
             habitCounters.forEach(counter => {
                 const habitId = counter.getAttribute('data-habit-id');
-                const habit = appData.habits.find(h => h.id === habitId);
-                if (habit) {
-                    counter.textContent = formatStreak(calculateHabitStreak(habitId));
-                }
+                counter.textContent = formatStreak(calculateHabitStreak(habitId));
             });
-
-            // 2. Atualiza o contador na página de detalhes (se estiver visível)
-            if (state.currentView === 'habitDetail' && state.currentHabitId) {
-                const habitStreakEl = document.getElementById('habitStreak');
-                if (habitStreakEl) {
-                    const habitStreak = calculateHabitStreak(state.currentHabitId);
-                    habitStreakEl.textContent = `Sequência: ${formatStreak(habitStreak)}`;
-                }
-            }
         }
-
-        // ADICIONADO: Função para iniciar o intervalo dos contadores
+        
         function startStreakCounter() {
-            updateStreakCounter(); // Executa uma vez imediatamente
-            setInterval(updateStreakCounter, 1000); // E depois a cada segundo
+            // A lógica de streak agora é menos "em tempo real", então não precisa de um timer a cada segundo.
+            // A atualização acontece naturalmente com a renderização da UI.
         }
     </script>
 </body>
