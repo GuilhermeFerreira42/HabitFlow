@@ -107,11 +107,9 @@
                 <h2 class="text-xl font-semibold">Meus Hábitos</h2>
             </div>
 
+            <!-- Container de hábitos (AGORA TOTALMENTE DINÂMICO) -->
             <div id="habitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Hábitos serão renderizados aqui via JavaScript -->
-                <div class="text-center py-10 text-white/40" id="noHabitsMessage">
-                    Nenhum hábito cadastrado. Adicione seu primeiro hábito usando o formulário na barra lateral.
-                </div>
+              <!-- Hábitos renderizados via JavaScript -->
             </div>
         </div>
 
@@ -463,33 +461,33 @@
             }
         }
 
+        // ATUALIZADO: Função de renderização de hábitos (CORREÇÃO DO PROBLEMA)
         function renderHabits() {
             const container = document.getElementById('habitsContainer');
-            const noHabitsMessage = document.getElementById('noHabitsMessage');
+            container.innerHTML = ''; // Limpa completamente o container
 
             if (appData.habits.length === 0) {
-                noHabitsMessage.classList.remove('hidden');
-                container.innerHTML = '';
+                // Cria mensagem de "nenhum hábito" dinamicamente
+                const noHabitsMessage = document.createElement('div');
+                noHabitsMessage.className = 'text-center py-10 text-white/40 col-span-full';
+                noHabitsMessage.textContent = 'Nenhum hábito cadastrado. Adicione seu primeiro hábito usando o formulário na barra lateral.';
                 container.appendChild(noHabitsMessage);
                 return;
             }
-
-            noHabitsMessage.classList.add('hidden');
-            container.innerHTML = '';
 
             appData.habits.forEach(habit => {
                 const habitCard = document.createElement('div');
                 habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card cursor-pointer hover:border-white/20 transition flex flex-col';
                 habitCard.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
-                        <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
-                            ${formatStreak(calculateHabitStreak(habit.id))}
-                        </div>
+                  <div class="flex justify-between items-start">
+                    <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
+                    <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
+                      ${formatStreak(calculateHabitStreak(habit.id))}
                     </div>
-                    <div class="mt-2 text-sm text-white/60">
-                        ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
-                    </div>
+                  </div>
+                  <div class="mt-2 text-sm text-white/60">
+                    ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
+                  </div>
                 `;
                 habitCard.addEventListener('click', () => showHabitDetail(habit.id));
                 container.appendChild(habitCard);
@@ -762,7 +760,7 @@
             });
         }
 
-        // Funções de CRUD para hábitos
+        // Funções de CRUD para hábitos (COM MELHORIA DE UX)
         function addHabit(name) {
             const newHabit = {
                 id: generateId(),
@@ -773,10 +771,10 @@
             };
 
             appData.habits.push(newHabit);
-
-            // Ações explícitas: Primeiro salva, depois atualiza a tela.
-            persistData();
-            updateUI();
+            saveData(); // Persiste dados e atualiza UI
+            
+            // Melhoria de UX: Foco automático no campo de novo hábito
+            document.getElementById('habitName').focus();
         }
 
         function updateHabitName(habitId, newName) {
