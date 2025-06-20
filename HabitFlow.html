@@ -51,6 +51,33 @@
         .is-today {
             box-shadow: 0 0 0 2px #3B82F6; /* Anel azul para o dia atual */
         }
+        /* NOVO: Estilos para o modal maximizado - ABORDAGEM FINAL E MAIS ROBUSTA */
+        .modal-maximized {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 16rem;    /* Define o limite esquerdo na largura da sidebar */
+            right: 0;       /* Define o limite direito na borda da tela */
+            width: auto;    /* Deixa o navegador calcular a largura com base em left/right */
+            height: auto;   /* Deixa o navegador calcular a altura com base em top/bottom */
+            max-width: none;
+            border-radius: 0;
+            margin: 0;
+            padding: 0;     /* Remove o padding do contêiner principal quando maximizado */
+            z-index: 51;
+        }
+        /* Ajusta o conteúdo interno para preencher o espaço e ter o espaçamento correto */
+        .modal-maximized .modal-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 1.5rem; /* Adiciona o padding (p-6) aqui dentro */
+        }
+        /* Garante que o textarea ocupe o espaço vertical restante */
+        .modal-maximized #modalInput {
+            flex-grow: 1;
+            min-height: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
@@ -255,11 +282,19 @@
 
     <div id="universalModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
         <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
-            <h3 id="modalTitle" class="text-lg font-semibold mb-4">Editar</h3>
-            <textarea id="modalInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4" rows="4"></textarea>
-            <div class="flex justify-end space-x-2">
-                <button id="modalCancel" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Cancelar</button>
-                <button id="modalConfirm" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Confirmar</button>
+            <div class="modal-content-wrapper">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-lg font-semibold">Editar</h3>
+                    <button id="modalMaximizeBtn" class="p-2 -mr-2 rounded-full hover:bg-white/10 transition" title="Maximizar">
+                        <svg class="h-4 w-4" id="iconMaximize" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 1v4m0 0h-4m4 0l-5-5" /></svg>
+                        <svg class="h-4 w-4 hidden" id="iconRestore" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5m0 0v5m0-5l5 5m9-9h5m0 0v-5m0 5l-5-5M5 10V5m0 0h5m-5 0l5 5m9 9v-5m0 0h-5m5 0l-5-5" /></svg>
+                    </button>
+                </div>
+                <textarea id="modalInput" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4" rows="8"></textarea>
+                <div class="flex justify-end space-x-2">
+                    <button id="modalCancel" class="px-4 py-2 rounded-lg hover:bg-white/10 transition">Cancelar</button>
+                    <button id="modalConfirm" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition">Confirmar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -332,15 +367,16 @@
             dataModalContext: null, // 'backup', 'restore'
             dataToRestore: null
         };
-
+    
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setupEventListeners();
             updateUI();
             startStreakCounter();
+            // A chamada para makeModalResizable() foi removida daqui
         });
-
+    
         // Estrutura de dados
         let appData = {
             habits: [],
@@ -348,7 +384,7 @@
             lastActivity: null,
             isNotesFeedVisible: false // NOVO (Fase 3 / Módulo 6)
         };
-
+    
         // Funções de dados
         function loadData() {
             const savedData = localStorage.getItem('habitFlowData');
@@ -360,16 +396,16 @@
                 }
             }
         }
-
+    
         function persistData() {
             localStorage.setItem('habitFlowData', JSON.stringify(appData));
         }
-
+    
         function saveData() {
             persistData();
             updateUI();
         }
-
+    
         // Configuração de Event Listeners
         function setupEventListeners() {
             document.getElementById('logoTitle').addEventListener('click', () => showDashboard());
@@ -459,30 +495,63 @@
                 persistData(); // Salva a preferência
                 updateNotesFeedVisibility(); // Atualiza a UI
             });
+            document.getElementById('notesFeedContent').addEventListener('click', (e) => {
+                const card = e.target.closest('[data-note-type]');
+                if (!card) return;
+    
+                const type = card.getAttribute('data-note-type');
+                if (type === 'habit') {
+                    const habitId = card.getAttribute('data-habit-id');
+                    showHabitDetail(habitId);
+                } else if (type === 'general') {
+                    showGeneralNotes();
+                }
+            });
+            // LÓGICA DE MAXIMIZAR/RESTAURAR - CORRIGIDA
+            document.getElementById('modalMaximizeBtn').addEventListener('click', () => {
+                const modalContainer = document.querySelector('#universalModal > .glassmorphism');
+                const modalOverlay = document.getElementById('universalModal');
+                const iconMaximize = document.getElementById('iconMaximize');
+                const iconRestore = document.getElementById('iconRestore');
+    
+                // Alterna a classe de maximização no contêiner do modal
+                modalContainer.classList.toggle('modal-maximized');
+    
+                // Verifica se está maximizado para ajustar o overlay e os ícones
+                if (modalContainer.classList.contains('modal-maximized')) {
+                    modalOverlay.classList.remove('items-center', 'justify-center');
+                    iconMaximize.classList.add('hidden');
+                    iconRestore.classList.remove('hidden');
+                } else {
+                    modalOverlay.classList.add('items-center', 'justify-center');
+                    iconMaximize.classList.remove('hidden');
+                    iconRestore.classList.add('hidden'); // CORRIGIDO: Oculta o ícone de restaurar
+                }
+            });
         }
-
+    
         // Funções de navegação
         function showDashboard() {
             state.currentView = 'dashboard';
             updateUI();
         }
-
+    
         function showHabitDetail(habitId) {
             state.currentView = 'habitDetail';
             state.currentHabitId = habitId;
             updateUI();
         }
-
+    
         function showGeneralNotes() {
             state.currentView = 'generalNotes';
             updateUI();
         }
-
+    
         function showSettings() {
             state.currentView = 'settings';
             updateUI();
         }
-
+    
         // Funções de atualização da UI
         function updateUI() {
             // Esconder todas as views
@@ -511,6 +580,7 @@
         function renderHabits() {
             const container = document.getElementById('habitsContainer');
             container.innerHTML = '';
+    
             if (appData.habits.length === 0) {
                 container.innerHTML = '<div class="text-center py-10 text-white/40 col-span-full">Nenhum hábito cadastrado. Adicione um na barra lateral.</div>';
             } else {
@@ -519,7 +589,7 @@
                     habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col cursor-pointer';
                     habitCard.innerHTML = `
                       <div class="flex justify-between items-start">
-                        <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
+                        <h3 class="font-medium truncate-text pr-2">${escapeHTML(habit.name)}</h3>
                         <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
                           ---
                         </div>
@@ -535,33 +605,32 @@
                     container.appendChild(habitCard);
                 });
             }
-           // A chamada para atualizar o contador é necessária após a renderização
+           
             updateStreakCounter();
-            // NOVO: Atualiza a visibilidade do feed de anotações
             updateNotesFeedVisibility();
         }
-
+    
         function renderHabitDetail() {
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) {
                 showDashboard();
                 return;
             }
-
-            document.getElementById('habitNameTitle').textContent = habit.name;
+    
+            document.getElementById('habitNameTitle').textContent = habit.name; // .textContent já previne HTML, é seguro.
             document.getElementById('editHabitName').onclick = () => {
                 showEditModal('Editar nome do hábito', habit.name, 'habitName');
             };
-
+    
             updateCalendar();
             renderRecentLogs();
             renderHabitNotes();
-
+    
             document.getElementById('addNoteBtn').onclick = () => {
                  showEditModal('Nova anotação', '', 'habitNote');
             };
         }
-
+    
         function updateCalendar() {
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const titleEl = document.getElementById('calendarTitle');
@@ -630,7 +699,7 @@
             }
             container.appendChild(daysContainer);
         }
-
+    
         // MODIFICADO (Fase 2): Adiciona destaque para o dia atual
         function renderMonthCalendar() {
             const monthDaysContainer = document.getElementById('monthDays');
@@ -640,13 +709,13 @@
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
+    
             const firstDay = new Date(state.currentYear, state.currentMonth, 1);
             const daysInMonth = new Date(state.currentYear, state.currentMonth + 1, 0).getDate();
             const startingDay = firstDay.getDay();
-
+    
             for (let i = 0; i < startingDay; i++) monthDaysContainer.appendChild(document.createElement('div'));
-
+    
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(state.currentYear, state.currentMonth, day);
                 const dayElement = document.createElement('div');
@@ -665,7 +734,7 @@
                 monthDaysContainer.appendChild(dayElement);
             }
         }
-
+    
         // MODIFICADO (Fase 2): Adiciona destaque para o dia atual
         function renderYearCalendar() {
             const yearContainer = document.getElementById('yearCalendar');
@@ -673,16 +742,16 @@
             yearContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6';
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) return;
-
+    
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const dayNames = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-
+    
             for (let month = 0; month < 12; month++) {
                 const monthWrapper = document.createElement('div');
                 monthWrapper.className = 'glassmorphism border border-white/10 rounded-xl p-3 text-sm';
-
+    
                 const monthTitle = document.createElement('h4');
                 monthTitle.className = 'font-semibold text-center mb-2 cursor-pointer hover:text-blue-400';
                 monthTitle.textContent = monthNames[month];
@@ -692,7 +761,7 @@
                     updateCalendar();
                 };
                 monthWrapper.appendChild(monthTitle);
-
+    
                 const daysHeader = document.createElement('div');
                 daysHeader.className = 'grid grid-cols-7 gap-1 text-xs text-center text-white/50 mb-1';
                 dayNames.forEach(name => {
@@ -701,27 +770,27 @@
                     daysHeader.appendChild(dayNameEl);
                 });
                 monthWrapper.appendChild(daysHeader);
-
+    
                 const daysContainer = document.createElement('div');
                 daysContainer.className = 'grid grid-cols-7 gap-1';
                 const firstDayOfMonth = new Date(state.currentYear, month, 1).getDay();
                 const daysInMonth = new Date(state.currentYear, month + 1, 0).getDate();
-
+    
                 for (let i = 0; i < firstDayOfMonth; i++) daysContainer.appendChild(document.createElement('div'));
-
+    
                 for (let day = 1; day <= daysInMonth; day++) {
                     const dayCell = document.createElement('div');
                     dayCell.className = 'h-6 w-6 flex items-center justify-center rounded-full hover:bg-white/10 transition cursor-pointer';
                     dayCell.textContent = day;
                     const currentDate = new Date(state.currentYear, month, day);
-
+    
                     if (habit.logs && habit.logs.some(log => log.date.startsWith(formatDate(currentDate)))) {
                         dayCell.classList.add('bg-blue-500/50', 'border', 'border-blue-400');
                     }
                     if (currentDate.getTime() === today.getTime()) {
                         dayCell.classList.add('is-today');
                     }
-
+    
                     dayCell.onclick = () => showLogModal(currentDate);
                     daysContainer.appendChild(dayCell);
                 }
@@ -729,19 +798,19 @@
                 yearContainer.appendChild(monthWrapper);
             }
         }
-
-
+    
+    
         function renderRecentLogs() {
             const container = document.getElementById('recentLogs');
             if (!container) return;
             container.innerHTML = '';
-
+    
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit || !habit.logs || habit.logs.length === 0) {
                 container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhum registro encontrado</p>';
                 return;
             }
-
+    
             const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
             sortedLogs.slice(0, 10).forEach(log => { // Limita a 10 logs
                 const logElement = document.createElement('div');
@@ -761,12 +830,12 @@
                 container.appendChild(logElement);
             });
         }
-
+    
         function renderHabitNotes() {
             const container = document.getElementById('habitNotes');
             if (!container) return;
             container.innerHTML = '';
-
+    
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit || !habit.notes || habit.notes.length === 0) {
                 container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhuma anotação.</p>';
@@ -784,7 +853,7 @@
                             <button class="text-xs hover:text-red-400 transition" data-note-id="${note.id}" data-action="delete">Excluir</button>
                         </div>
                     </div>
-                    <p class="text-sm whitespace-pre-line break-word">${note.content}</p>
+                    <p class="text-sm whitespace-pre-line break-word">${escapeHTML(note.content)}</p>
                 `;
                 noteElement.querySelector('[data-action="edit"]').addEventListener('click', () => {
                     showEditModal('Editar anotação', note.content, 'habitNote', note.id);
@@ -812,25 +881,28 @@
                 noteElement.className = 'general-note glassmorphism border border-white/10 rounded-lg p-3 mb-3';
                 const noteDate = new Date(note.createdAt).toLocaleDateString('pt-BR');
                 const characterLimit = 250;
+                
+                const escapedContent = escapeHTML(note.content);
                 let contentHTML = '';
                 if (note.content.length > characterLimit) {
                     contentHTML = `
                         <div class="short-content">
-                            <p class="text-sm whitespace-pre-line break-word">${note.content.substring(0, characterLimit)}...</p>
+                            <p class="text-sm whitespace-pre-line break-word">${escapedContent.substring(0, characterLimit)}...</p>
                         </div>
                         <div class="full-content hidden">
-                            <p class="text-sm whitespace-pre-line break-word">${note.content}</p>
+                            <p class="text-sm whitespace-pre-line break-word">${escapedContent}</p>
                         </div>
                         <button class="toggle-content-btn text-xs text-blue-400 hover:underline mt-2">Ver mais...</button>
                     `;
                 } else {
-                    contentHTML = `<p class="text-sm whitespace-pre-line break-word">${note.content}</p>`;
+                    contentHTML = `<p class="text-sm whitespace-pre-line break-word">${escapedContent}</p>`;
                 }
+    
                 noteElement.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs text-white/60">${noteDate}</span>
                         <div class="flex space-x-2">
-                             <button class="text-xs hover:text-blue-400 transition" onclick="showEditModal('Editar anotação geral', \`${note.content.replace(/`/g, '\\`')}\`, 'generalNote', '${note.id}')">Editar</button>
+                             <button class="text-xs hover:text-blue-400 transition" onclick="showEditModal('Editar anotação geral', \`${note.content.replace(/`/g, '\`')}\`, 'generalNote', '${note.id}')">Editar</button>
                             <button class="text-xs hover:text-red-400 transition" onclick="showConfirmModal('Excluir anotação geral', 'Tem certeza?', 'deleteGeneralNote', '${note.id}')">Excluir</button>
                         </div>
                     </div>
@@ -839,7 +911,7 @@
                 container.appendChild(noteElement);
             });
         }
-
+    
         // Funções de CRUD (Create, Read, Update, Delete)
         function addHabit(name) {
             const newHabit = { id: generateId(), name: name, createdAt: new Date().toISOString(), logs: [], notes: [] };
@@ -847,18 +919,18 @@
             saveData();
             document.getElementById('habitName').focus();
         }
-
+    
         function updateHabitName(habitId, newName) {
             const habit = appData.habits.find(h => h.id === habitId);
             if (habit) { habit.name = newName; saveData(); }
         }
-
+    
         function deleteHabit(habitId) {
             appData.habits = appData.habits.filter(h => h.id !== habitId);
             if (state.currentHabitId === habitId) state.currentView = 'dashboard';
             saveData();
         }
-
+    
         function addLog(habitId, dateTime, logId = null) {
             const habit = appData.habits.find(h => h.id === habitId);
             if (!habit) return;
@@ -871,7 +943,7 @@
             appData.lastActivity = new Date().toISOString();
             saveData();
         }
-
+    
         function deleteLog(habitId, logId) {
             const habit = appData.habits.find(h => h.id === habitId);
             if (habit) {
@@ -895,12 +967,12 @@
             }
             saveData();
         }
-
+    
         function deleteHabitNote(habitId, noteId) {
             const habit = appData.habits.find(h => h.id === habitId);
             if (habit) { habit.notes = habit.notes.filter(n => n.id !== noteId); saveData(); }
         }
-
+    
         function addGeneralNote(content, noteId = null) {
             if (noteId) {
                 const note = appData.generalNotes.find(n => n.id === noteId);
@@ -910,12 +982,12 @@
             }
             saveData();
         }
-
+    
         function deleteGeneralNote(noteId) {
             appData.generalNotes = appData.generalNotes.filter(n => n.id !== noteId);
             saveData();
         }
-
+    
         // Funções de modal
         function showEditModal(title, initialValue, context, itemId = null) {
             state.modalContext = context;
@@ -927,7 +999,7 @@
             document.getElementById('universalModal').classList.remove('hidden');
             document.getElementById('modalInput').focus();
         }
-
+    
         function handleModalConfirm() {
             const newValue = document.getElementById('modalInput').value; // .trim() removido para permitir anotações com espaços
             if (state.modalContext === 'habitName' && state.currentHabitId && newValue.trim()) {
@@ -939,7 +1011,7 @@
             }
             document.getElementById('universalModal').classList.add('hidden');
         }
-
+    
         // MODIFICADO (Fase 2): Transforma em "Super Modal"
         function showLogModal(date) {
             state.selectedDateForLog = date; // Salva a data selecionada
@@ -957,7 +1029,7 @@
             const hours = now.getHours().toString().padStart(2, '0');
             const minutes = now.getMinutes().toString().padStart(2, '0');
             document.getElementById('logTime').value = `${hours}:${minutes}`;
-
+    
             // Renderiza a lista de logs do dia (Tarefa 4.2)
             renderDailyLogs(date);
             
@@ -971,17 +1043,17 @@
             container.innerHTML = '';
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) return;
-
+    
             const dateStr = formatDate(date);
             const dailyLogs = habit.logs
                 .filter(log => log.date.startsWith(dateStr))
                 .sort((a, b) => new Date(a.date) - new Date(b.date));
-
+    
             if (dailyLogs.length === 0) {
                 container.innerHTML = `<p class="text-sm text-white/40 text-center py-2">Nenhum registro para este dia.</p>`;
                 return;
             }
-
+    
             dailyLogs.forEach(log => {
                 const logEl = document.createElement('div');
                 logEl.className = 'flex justify-between items-center bg-white/5 p-2 rounded-lg';
@@ -1009,7 +1081,7 @@
                 container.appendChild(logEl);
             });
         }
-
+    
         function handleLogModalConfirm() {
             const dateStr = document.getElementById('logDate').value;
             const timeStr = document.getElementById('logTime').value;
@@ -1027,7 +1099,7 @@
             document.getElementById('logTime').value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             renderDailyLogs(state.selectedDateForLog);
         }
-
+    
         function showConfirmModal(title, message, action, itemId = null) {
             document.getElementById('confirmModalTitle').textContent = title;
             document.getElementById('confirmModalMessage').textContent = message;
@@ -1035,12 +1107,12 @@
             document.getElementById('confirmModal').setAttribute('data-item-id', itemId || '');
             document.getElementById('confirmModal').classList.remove('hidden');
         }
-
+    
         function handleConfirmModalConfirm() {
             const action = document.getElementById('confirmModal').getAttribute('data-action');
             const itemId = document.getElementById('confirmModal').getAttribute('data-item-id');
             let shouldReload = false;
-
+    
             if (action === 'deleteLog' && state.currentHabitId && itemId) {
                 deleteLog(state.currentHabitId, itemId);
             } else if (action === 'deleteHabit' && state.currentHabitId) {
@@ -1058,7 +1130,7 @@
                 persistData();
                 shouldReload = true;
             }
-
+    
             document.getElementById('confirmModal').classList.add('hidden');
             if (shouldReload) {
                 setTimeout(() => location.reload(), 50);
@@ -1066,7 +1138,7 @@
                 updateUI(); // Ações que não recarregam apenas atualizam a UI
             }
         }
-
+    
         // Funções de Backup/Restore
         function handleBackup() {
             try {
@@ -1085,7 +1157,7 @@
                 alert("Não foi possível criar o arquivo de backup.");
             }
         }
-
+    
         function handleRestore() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -1119,16 +1191,16 @@
             localStorage.removeItem('habitFlowData');
             appData = { habits: [], generalNotes: [], lastActivity: null };
         }
-
+    
         // Funções de utilidade
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substring(2);
         }
-
+    
         function formatDate(date) {
             return date.toISOString().split('T')[0];
         }
-
+    
         function formatStreak(duration) {
             if (!duration || duration <= 0) return '---';
             const totalSeconds = Math.floor(duration / 1000);
@@ -1138,7 +1210,7 @@
             const seconds = Math.floor(totalSeconds % 60);
             return `${days}d ${hours}h ${minutes}m ${seconds}s`;
         }
-
+    
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
             element.select();
@@ -1148,7 +1220,7 @@
             btn.textContent = 'Copiado!';
             setTimeout(() => { btn.textContent = originalText; }, 2000);
         }
-
+    
         // Funções de sequência (Streak)
         function calculateHabitStreak(habitId) {
             const habit = appData.habits.find(h => h.id === habitId);
@@ -1169,7 +1241,7 @@
             }
             return streakStartDate;
         }
-
+    
         function renderSidebarHabitsList() {
             const container = document.getElementById('sidebarHabitsList');
             container.innerHTML = '';
@@ -1195,7 +1267,7 @@
                 container.appendChild(habitLink);
             });
         }
-
+    
         function updateStreakCounter() {
             const habitCounters = document.querySelectorAll('[data-habit-id]');
             habitCounters.forEach(counter => {
@@ -1215,7 +1287,7 @@
             updateStreakCounter(); // Executa uma vez imediatamente
             setInterval(updateStreakCounter, 1000); // E depois a cada segundo
         }
-
+    
         function navigateCalendar(direction) {
             if (state.calendarView === 'month') {
                 state.currentMonth += direction;
@@ -1231,51 +1303,61 @@
             }
             updateCalendar();
         }
-
+    
         // NOVO (Fase 3 / Módulo 6): Renderiza o feed de anotações
         function renderNotesFeed() {
             const container = document.getElementById('notesFeedContent');
             container.innerHTML = '';
+            
             let allNotes = [];
-            // Coleta anotações gerais
+    
             appData.generalNotes.forEach(note => {
                 allNotes.push({ ...note, type: 'general' });
             });
-            // Coleta anotações de hábitos
+    
             appData.habits.forEach(habit => {
                 if (habit.notes) {
                     habit.notes.forEach(note => {
-                        allNotes.push({ ...note, type: 'habit', habitName: habit.name });
+                        allNotes.push({ ...note, type: 'habit', habitName: habit.name, habitId: habit.id });
                     });
                 }
             });
-            // Ordena todas as anotações pela data de criação (mais recentes primeiro)
+    
             allNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
             if (allNotes.length === 0) {
                 container.innerHTML = '<div class="text-center py-10 text-white/40 col-span-full">Nenhuma anotação encontrada.</div>';
                 return;
             }
+    
             allNotes.forEach(note => {
                 const noteCard = document.createElement('div');
-                noteCard.className = 'glassmorphism border border-white/10 rounded-xl p-4';
+                noteCard.className = 'glassmorphism border border-white/10 rounded-xl p-4 cursor-pointer hover:border-white/20 transition';
+                noteCard.setAttribute('data-note-type', note.type);
+                if (note.type === 'habit') {
+                    noteCard.setAttribute('data-habit-id', note.habitId);
+                }
+    
                 const noteDate = new Date(note.createdAt).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+                
                 let headerHTML = `<span class="text-xs text-white/60">${noteDate}</span>`;
                 if (note.type === 'habit') {
                     headerHTML = `
                         <div class="flex justify-between items-center">
                             <span class="text-xs text-white/60">${noteDate}</span>
-                            <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">Do hábito: ${note.habitName}</span>
+                            <span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full">Do hábito: ${escapeHTML(note.habitName)}</span>
                         </div>
                     `;
                 }
+    
                 noteCard.innerHTML = `
                     <div class="mb-2">${headerHTML}</div>
-                    <p class="text-sm whitespace-pre-line break-word">${note.content}</p>
+                    <p class="text-sm whitespace-pre-line break-word">${escapeHTML(note.content)}</p>
                 `;
                 container.appendChild(noteCard);
             });
         }
-
+    
         // NOVO (Fase 3 / Módulo 6): Controla a visibilidade do feed na UI
         function updateNotesFeedVisibility() {
             const container = document.getElementById('notesFeedContainer');
@@ -1289,6 +1371,22 @@
                 toggleBtn.classList.remove('bg-blue-500/20');
             }
         }
+    
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(match) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[match];
+            });
+        }
+    
+        // A função makeModalResizable() foi completamente removida.
+    
     </script>
 </body>
 </html>
