@@ -304,6 +304,9 @@
 
             // Atualizar a UI inicial
             updateUI();
+
+            // ADICIONADO: Iniciar os relógios
+            startStreakCounter();
         });
 
         // Estrutura de dados
@@ -480,7 +483,9 @@
                 habitCard.innerHTML = `
                     <div class="flex justify-between items-start">
                         <h3 class="font-medium truncate-text pr-2">${habit.name}</h3>
-                        <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap">${formatStreak(calculateHabitStreak(habit.id))}</div>
+                        <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
+                            ${formatStreak(calculateHabitStreak(habit.id))}
+                        </div>
                     </div>
                     <div class="mt-2 text-sm text-white/60">
                         ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
@@ -766,9 +771,12 @@
                 logs: [],
                 notes: []
             };
-            
+
             appData.habits.push(newHabit);
-            saveData();
+
+            // Ações explícitas: Primeiro salva, depois atualiza a tela.
+            persistData();
+            updateUI();
         }
 
         function updateHabitName(habitId, newName) {
@@ -977,7 +985,9 @@
         function handleConfirmModalConfirm() {
             const action = document.getElementById('confirmModal').getAttribute('data-action');
             const itemId = document.getElementById('confirmModal').getAttribute('data-item-id');
+
             let shouldReload = false;
+
             if (action === 'deleteHabit' && state.currentHabitId) {
                 deleteHabit(state.currentHabitId);
             } else if (action === 'deleteLog' && state.currentHabitId && itemId) {
@@ -992,13 +1002,18 @@
             } else if (action === 'restoreData' && state.dataToRestore) {
                 appData = state.dataToRestore;
                 state.dataToRestore = null;
-                persistData();
+                persistData(); 
                 shouldReload = true;
             }
+
+            // Esconde o modal primeiro
             document.getElementById('confirmModal').classList.add('hidden');
+
             if (shouldReload) {
-                location.reload();
+                // Recarrega com um pequeno atraso para garantir que a UI foi atualizada
+                setTimeout(() => location.reload(), 50);
             } else {
+                // Em todas as outras ações, apenas atualiza a UI sem recarregar
                 updateUI();
             }
         }
@@ -1062,7 +1077,7 @@
         }
 
         function clearAllData() {
-            // Remove diretamente a chave do localStorage, que é mais garantido.
+            // Remove diretamente a chave do localStorage.
             localStorage.removeItem('habitFlowData');
 
             // Reseta o estado da aplicação na memória.
@@ -1071,9 +1086,6 @@
                 generalNotes: [],
                 lastActivity: null
             };
-
-            // Salva o estado limpo e atualiza a interface.
-            saveData();
         }
 
         // Funções de utilidade
@@ -1167,6 +1179,34 @@
                 });
                 container.appendChild(habitLink);
             });
+        }
+
+        // MODIFICADO: Função agora atualiza TODOS os contadores visíveis
+        function updateStreakCounter() {
+            // 1. Atualiza os contadores no Dashboard
+            const habitCounters = document.querySelectorAll('[data-habit-id]');
+            habitCounters.forEach(counter => {
+                const habitId = counter.getAttribute('data-habit-id');
+                const habit = appData.habits.find(h => h.id === habitId);
+                if (habit) {
+                    counter.textContent = formatStreak(calculateHabitStreak(habitId));
+                }
+            });
+
+            // 2. Atualiza o contador na página de detalhes (se estiver visível)
+            if (state.currentView === 'habitDetail' && state.currentHabitId) {
+                const habitStreakEl = document.getElementById('habitStreak');
+                if (habitStreakEl) {
+                    const habitStreak = calculateHabitStreak(state.currentHabitId);
+                    habitStreakEl.textContent = `Sequência: ${formatStreak(habitStreak)}`;
+                }
+            }
+        }
+
+        // ADICIONADO: Função para iniciar o intervalo dos contadores
+        function startStreakCounter() {
+            updateStreakCounter(); // Executa uma vez imediatamente
+            setInterval(updateStreakCounter, 1000); // E depois a cada segundo
         }
     </script>
 </body>
