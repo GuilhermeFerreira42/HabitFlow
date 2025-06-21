@@ -116,10 +116,10 @@ O objetivo desta fase é refinar a organização da aplicação, movendo funçõ
   - [x] Tarefa 6.3: Desenvolver a Lógica de Agregação: Criar uma função que colete todas as anotações (gerais e de hábitos específicos) e as ordene cronologicamente. Cada anotação de hábito deve indicar de qual hábito ela veio (Ex: "Do hábito: Ler 10 páginas").
   - [x] Tarefa 6.4: Salvar Preferência do Usuário: Usar o `localStorage` para salvar o estado (visível ou oculto) da seção de anotações, para que a escolha do usuário persista mesmo após recarregar a página.
 
-#### `[ ]` Módulo 7: Interatividade do Feed e Segurança
+#### `[x]` Módulo 7: Interatividade do Feed e Segurança
 
   - `[ ]` **Tarefa 7.1 (Segurança): Prevenir Interpretação de HTML:** Criar uma função para "escapar" texto inserido pelo usuário. Isso converterá caracteres especiais de HTML (como `<` e `>`) em suas entidades correspondentes (ex: `&lt;` e `&gt;`), impedindo que o navegador os interprete como código e corrija o bug que você descobriu.
-  - `[ ]` **Tarefa 7.2 (Interatividade): Adicionar Links ao Feed de Anotações:** Modificar o feed no dashboard para que cada card de anotação seja clicável.
+  - `[x]` **Tarefa 7.2 (Interatividade): Adicionar Links ao Feed de Anotações:** Modificar o feed no dashboard para que cada card de anotação seja clicável.
       - Se a anotação for de um **hábito específico**, o clique levará o usuário para a página de detalhes daquele hábito.
       - Se for uma **anotação geral**, o clique levará para a página de "Anotações Gerais".
 
@@ -127,9 +127,51 @@ O objetivo desta fase é refinar a organização da aplicação, movendo funçõ
 
   - `[X]` **Tarefa 8.1 (Usabilidade): Aumentar Área de Edição de Anotações:** Aumentar o tamanho padrão da caixa de texto (`textarea`) no modal de edição para facilitar a escrita e revisão de anotações mais longas.
 
-#### `[ ]` Módulo 9: Edição em Tela Cheia (Maximize/Restore)
+#### `[x]` Módulo 9: Edição em Tela Cheia (Maximize/Restore)
 
-  - `[ ]` **Tarefa 9.1: Remover Funcionalidade Anterior:** Antes de adicionar o novo recurso, vamos remover completamente a lógica de auto-redimensionamento da `textarea` para evitar conflitos.
-  - `[ ]` **Tarefa 9.2: Adicionar Botão de Maximizar/Restaurar:** No cabeçalho do modal de edição (`#universalModal`), adicionar um novo botão que alternará entre os ícones de "maximizar" e "restaurar".
-  - `[ ]` **Tarefa 9.3: Criar Estilos CSS para Tela Cheia:** Definir uma nova classe CSS (ex: `.modal-maximized`) que, quando aplicada, fará o modal se expandir para preencher toda a área de conteúdo principal (sem cobrir a barra lateral).
-  - `[ ]` **Tarefa 9.4: Implementar Lógica de Alternância:** Adicionar o código JavaScript que gerencia o clique no novo botão, aplicando/removendo a classe CSS de maximização e trocando o ícone do botão.
+  - `[x]` **Tarefa 9.1: Remover Funcionalidade Anterior:** Antes de adicionar o novo recurso, vamos remover completamente a lógica de auto-redimensionamento da `textarea` para evitar conflitos.
+  - `[x]` **Tarefa 9.2: Adicionar Botão de Maximizar/Restaurar:** No cabeçalho do modal de edição (`#universalModal`), adicionar um novo botão que alternará entre os ícones de "maximizar" e "restaurar".
+  - `[x]` **Tarefa 9.3: Criar Estilos CSS para Tela Cheia:** Definir uma nova classe CSS (ex: `.modal-maximized`) que, quando aplicada, fará o modal se expandir para preencher toda a área de conteúdo principal (sem cobrir a barra lateral).
+  - `[x]` **Tarefa 9.4: Implementar Lógica de Alternância:** Adicionar o código JavaScript que gerencia o clique no novo botão, aplicando/removendo a classe CSS de maximização e trocando o ícone do botão.
+
+
+------
+
+novo checklist, pronto para acompanharmos o progresso:
+
+### **Checklist de Desenvolvimento: Melhorias e Novas Funcionalidades**
+
+#### `[ ]` Módulo 1: Página do Hábito
+- `[ ]` **Tarefa 1.1: Implementar Relógio:**
+    - `[ ]` Adicionar o componente de relógio à página de detalhes do hábito.
+    - `[ ]` Ajustar o estilo e a exibição do relógio para se integrar ao design.
+
+#### `[ ]` Módulo 2: Melhorias na Barra Lateral
+- `[ ]` **Tarefa 2.1: Scroll Independente:**
+    - `[ ]` Implementar uma barra de rolagem vertical que funcione apenas para a lista de hábitos.
+    - `[ ]` Garantir que a altura total da barra lateral nunca ultrapasse a altura da janela (viewport).
+- `[ ]` **Tarefa 2.2: Reposicionar "Novo Hábito":**
+    - `[ ]` Mover o formulário de "Novo Hábito" para que fique posicionado dentro da seção "Meus Hábitos".
+    - `[ ]` Fixar a altura das outras seções (Navegação, etc.) para que não sejam afetadas pela rolagem da lista de hábitos.
+- `[ ]` **Tarefa 2.3: Ajuste Visual:**
+    - `[ ]` Otimizar o espaçamento e o layout dos elementos da barra lateral.
+    - `[ ]` Melhorar o design dos botões para uma aparência mais coesa e moderna.
+- `[ ]` **Tarefa 2.4: Funcionalidade de Retrair/Expandir:**
+    - `[ ]` Adicionar um botão ou ícone para permitir que a seção da lista de hábitos seja recolhida (retraída) e expandida.
+
+#### `[ ]` Módulo 3: Gerenciamento de Hábitos
+- `[ ]` **Tarefa 3.1: Exclusão Direta:**
+    - `[ ]` Reintroduzir um botão de excluir diretamente ao lado de cada hábito na lista, removendo a necessidade de um pop-up de confirmação para esta ação.
+- `[ ]` **Tarefa 3.2: Exclusão Completa:**
+    - `[ ]` Garantir que, ao excluir um hábito, todos os seus dados associados (logs, anotações, etc.) sejam permanentemente removidos do sistema.
+
+#### `[ ]` Módulo 4: Customização Visual
+- `[ ]` **Tarefa 4.1: Papel de Parede:**
+    - `[ ]` Implementar a funcionalidade para que o usuário possa definir uma imagem de fundo (papel de parede) para o dashboard principal.
+
+#### `[ ]` Módulo 5: Ações Rápidas
+- `[ ]` **Tarefa 5.1: Menu de Ações Rápidas:**
+    - `[ ]` Adicionar um ícone de menu "três pontos" ao lado de cada hábito na barra lateral.
+    - `[ ]` Criar um menu dropdown que apareça ao clicar no ícone, contendo as opções:
+        - `[ ]` Editar nome
+        - `[ ]` Excluir hábito
