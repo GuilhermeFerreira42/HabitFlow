@@ -191,6 +191,19 @@
                  display: none; /* Oculta o botão externo quando a sidebar está aberta */
             }
         }
+
+        /* INÍCIO DA ALTERAÇÃO: Estilos para o Título do Cabeçalho Principal */
+        #app-container.sidebar-collapsed #mainHeaderTitle {
+            display: block; /* Torna o título visível */
+            position: absolute;
+            top: 1.5rem;  /* 24px - Alinha verticalmente com o botão de menu */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30; /* Garante que fique abaixo do botão, se houver sobreposição */
+            pointer-events: none; /* Impede que o título intercepte cliques do mouse */
+        }
+        /* FIM DA ALTERAÇÃO */
+
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
@@ -264,6 +277,7 @@
                 </svg>
             </button>
             
+            <h1 id="mainHeaderTitle" class="hidden text-2xl font-bold tracking-wide">HabitFlow</h1>
             <div id="dashboardView" class="fade-in">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-semibold">Meus Hábitos</h2>
