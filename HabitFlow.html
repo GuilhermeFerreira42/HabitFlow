@@ -47,11 +47,9 @@
             word-wrap: break-word; /* Fallback para navegadores mais antigos */
             word-break: break-word;
         }
-        /* NOVO (Fase 2): Estilo para destacar o dia atual */
         .is-today {
             box-shadow: 0 0 0 2px #3B82F6; /* Anel azul para o dia atual */
         }
-        /* Garantia de posição fixa e alinhamento à direita da sidebar */
         .modal-maximized {
             position: fixed !important;
             top: 0 !important;
@@ -66,8 +64,6 @@
             z-index: 51 !important;
             transform: none !important;
         }
-
-        /* Garante que o conteúdo interno do modal se ajuste corretamente */
         .modal-maximized .modal-content-wrapper {
             display: flex;
             flex-direction: column;
@@ -75,72 +71,94 @@
             padding: 1.5rem;
             overflow: hidden;
         }
-
-        /* Força o textarea a ocupar todo o espaço disponível */
         .modal-maximized #modalInput {
             flex: 1 1 auto;
             min-height: 0;
             resize: none;
         }
-
-        /* Posiciona o botão de maximizar/restore dentro do modal */
         .modal-maximized #modalMaximizeBtn {
             position: absolute !important;
             right: 1.5rem !important;
             top: 1.5rem !important;
             z-index: 52 !important;
         }
+        #habitsListContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+        #habitsListContainer::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #habitsListContainer::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        #habitsListContainer::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
-    <aside class="w-64 glassmorphism border-r border-white/10 p-4 flex flex-col h-screen sticky top-0">
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
-            <p class="text-sm text-white/60">Seu companheiro de hábitos</p>
+    <aside class="w-64 glassmorphism border-r border-white/10 flex flex-col h-screen sticky top-0">
+        <div>
+            <div class="mb-8 p-4">
+                <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
+                <p class="text-sm text-white/60">Seu companheiro de hábitos</p>
+            </div>
+            <nav>
+                <ul class="space-y-2 px-4">
+                    <li>
+                        <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="dashboardLink">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="notesLink">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Anotações Gerais
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
 
-        <nav class="flex-1">
-            <ul class="space-y-2">
-                <li>
-                    <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="dashboardLink">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                        </svg>
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="notesLink">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Anotações Gerais
-                    </a>
-                </li>
-                <li class="pt-4 mt-4 border-t border-white/10">
-                    <h3 class="text-sm font-semibold text-white/70 mb-2 px-2">MEUS HÁBITOS</h3>
+        <div class="flex-1 flex flex-col min-h-0 mt-4 pt-4 border-t border-white/10">
+            <div class="flex justify-between items-center mb-2 px-4">
+                <h3 class="text-sm font-semibold text-white/70">MEUS HÁBITOS</h3>
+                <button id="toggleHabitsListBtn" class="p-1 rounded-full hover:bg-white/10 transition" title="Recolher/Expandir">
+                    <svg id="toggleHabitsIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="habitsCollapsibleContainer" class="flex-1 flex flex-col min-h-0 px-4">
+                <div id="habitsListContainer" class="flex-1 overflow-y-auto pr-2">
                     <div id="sidebarHabitsList" class="space-y-1">
-                    </div>
-                </li>
-            </ul>
-        </nav>
-
-        <div class="mt-auto">
-            <h3 class="text-sm font-semibold text-white/70 mb-2">NOVO HÁBITO</h3>
-            <form id="newHabitForm" class="space-y-2">
-                <input type="text" id="habitName" placeholder="Nome do hábito" class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition">Adicionar</button>
-            </form>
+                        </div>
+                </div>
+                <div class="mt-auto pt-4">
+                    <form id="newHabitForm" class="space-y-2">
+                        <input type="text" id="habitName" placeholder="Novo hábito..." class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition text-sm">Adicionar Hábito</button>
+                    </form>
+                </div>
+            </div>
         </div>
 
-        <div class="mt-4 pt-4 border-t border-white/10">
+        <div class="mt-4 pt-4 border-t border-white/10 px-4 pb-4">
             <a href="#" id="settingsLink" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition text-white/70">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Configurações
             </a>
         </div>
     </aside>
-
     <main class="flex-1 p-6">
         <div id="dashboardView" class="fade-in">
             <div class="flex justify-between items-center mb-6">
@@ -162,22 +180,27 @@
         </div>
 
         <div id="habitDetailView" class="hidden fade-in">
-            <div class="flex items-center mb-6">
-                <button id="backToDashboard" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                </button>
-                <h2 id="habitDetailTitle" class="text-xl font-semibold flex items-center">
-                    <span id="habitNameTitle"></span>
-                    <button id="editHabitName" class="ml-2 p-1 rounded-full hover:bg-white/10 transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center">
+                    <button id="backToDashboard" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </button>
-                </h2>
+                    <h2 id="habitDetailTitle" class="text-xl font-semibold flex items-center">
+                        <span id="habitNameTitle"></span>
+                        <button id="editHabitName" class="ml-2 p-1 rounded-full hover:bg-white/10 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                    </h2>
+                </div>
+                <div id="habitDetailStreakCounter" class="bg-white/10 text-lg font-mono px-4 py-2 rounded-full ml-4">
+                    ---
+                </div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2">
                     <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
@@ -371,7 +394,7 @@
             currentHabitId: null,
             editingNoteId: null,
             editingLogId: null,
-            selectedDateForLog: null, // NOVO (Fase 2): Armazena a data selecionada para o modal de log
+            selectedDateForLog: null,
             calendarView: 'month', // 'month' ou 'year'
             currentMonth: new Date().getMonth(),
             currentYear: new Date().getFullYear(),
@@ -386,7 +409,6 @@
             setupEventListeners();
             updateUI();
             startStreakCounter();
-            // A chamada para makeModalResizable() foi removida daqui
         });
     
         // Estrutura de dados
@@ -394,7 +416,7 @@
             habits: [],
             generalNotes: [],
             lastActivity: null,
-            isNotesFeedVisible: false // NOVO (Fase 3 / Módulo 6)
+            isNotesFeedVisible: false
         };
     
         // Funções de dados
@@ -402,7 +424,6 @@
             const savedData = localStorage.getItem('habitFlowData');
             if (savedData) {
                 appData = JSON.parse(savedData);
-                // NOVO: Garante compatibilidade com dados antigos
                 if (appData.isNotesFeedVisible === undefined) {
                     appData.isNotesFeedVisible = false;
                 }
@@ -503,9 +524,9 @@
             document.getElementById('backFromSettings').addEventListener('click', () => showDashboard());
             document.getElementById('settingsLink').addEventListener('click', () => showSettings());
             document.getElementById('toggleNotesFeedBtn').addEventListener('click', () => {
-                appData.isNotesFeedVisible = !appData.isNotesFeedVisible; // Alterna o estado
-                persistData(); // Salva a preferência
-                updateNotesFeedVisibility(); // Atualiza a UI
+                appData.isNotesFeedVisible = !appData.isNotesFeedVisible;
+                persistData();
+                updateNotesFeedVisibility();
             });
             document.getElementById('notesFeedContent').addEventListener('click', (e) => {
                 const card = e.target.closest('[data-note-type]');
@@ -519,7 +540,6 @@
                     showGeneralNotes();
                 }
             });
-            // LÓGICA DE MAXIMIZAR/RESTAURAR - CORRIGIDA
             document.getElementById('modalMaximizeBtn').addEventListener('click', () => {
                 const modalContainer = document.querySelector('#universalModal > .glassmorphism');
                 const modalOverlay = document.getElementById('universalModal');
@@ -527,17 +547,14 @@
                 const iconMaximize = document.getElementById('iconMaximize');
                 const iconRestore = document.getElementById('iconRestore');
 
-                // Alterna a classe de maximização
                 modalContainer.classList.toggle('modal-maximized');
 
-                // Força o navegador a recalcular as dimensões do modal
                 void modalContainer.offsetWidth;
 
-                // Ajusta o overlay e o posicionamento do botão
                 if (modalContainer.classList.contains('modal-maximized')) {
                     modalOverlay.classList.remove('items-center', 'justify-center');
                     modalOverlay.style.overflow = 'visible';
-                    btn.style.right = '1.5rem'; // Garante posicionamento relativo ao modal
+                    btn.style.right = '1.5rem';
                     iconMaximize.classList.add('hidden');
                     iconRestore.classList.remove('hidden');
                 } else {
@@ -546,6 +563,18 @@
                     btn.style.right = '';
                     iconMaximize.classList.remove('hidden');
                     iconRestore.classList.add('hidden');
+                }
+            });
+            document.getElementById('toggleHabitsListBtn').addEventListener('click', () => {
+                const container = document.getElementById('habitsCollapsibleContainer');
+                const icon = document.getElementById('toggleHabitsIcon');
+                
+                container.classList.toggle('hidden');
+                
+                if (container.classList.contains('hidden')) {
+                    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />`;
+                } else {
+                    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />`;
                 }
             });
         }
@@ -574,13 +603,11 @@
     
         // Funções de atualização da UI
         function updateUI() {
-            // Esconder todas as views
             document.getElementById('dashboardView').classList.add('hidden');
             document.getElementById('habitDetailView').classList.add('hidden');
             document.getElementById('generalNotesView').classList.add('hidden');
             document.getElementById('settingsView').classList.add('hidden');
             renderSidebarHabitsList();
-            // Mostrar a view correta
             if (state.currentView === 'dashboard') {
                 document.getElementById('dashboardView').classList.remove('hidden');
                 renderHabits();
@@ -592,11 +619,9 @@
                 renderGeneralNotes();
             } else if (state.currentView === 'settings') {
                 document.getElementById('settingsView').classList.remove('hidden');
-                // Nenhuma função de renderização é necessária pois o conteúdo é estático
             }
         }
         
-        // MODIFICADO (Fase 2): Adiciona o mini-calendário e seus elementos
         function renderHabits() {
             const container = document.getElementById('habitsContainer');
             container.innerHTML = '';
@@ -637,10 +662,18 @@
                 return;
             }
     
-            document.getElementById('habitNameTitle').textContent = habit.name; // .textContent já previne HTML, é seguro.
+            document.getElementById('habitNameTitle').textContent = habit.name;
             document.getElementById('editHabitName').onclick = () => {
                 showEditModal('Editar nome do hábito', habit.name, 'habitName');
             };
+
+            // ========== INÍCIO DA ALTERAÇÃO ==========
+            // Define o data-attribute para que a função global de atualização funcione
+            const habitDetailCounter = document.getElementById('habitDetailStreakCounter');
+            if (habitDetailCounter) {
+                habitDetailCounter.setAttribute('data-habit-id', habit.id);
+            }
+            // ========== FIM DA ALTERAÇÃO ==========
     
             updateCalendar();
             renderRecentLogs();
@@ -675,14 +708,12 @@
             }
         }
         
-        // NOVO (Fase 2): Cria o mini-calendário para o dashboard
         function renderMiniCalendar(habit, container) {
             container.innerHTML = '';
             const today = new Date();
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
             const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            // NOVO: Título do mini-calendário
             const title = document.createElement('h5');
             title.className = 'text-xs text-white/70 mb-2 text-center font-semibold';
             title.textContent = `${monthNames[currentMonth]} ${currentYear}`;
@@ -720,7 +751,6 @@
             container.appendChild(daysContainer);
         }
     
-        // MODIFICADO (Fase 2): Adiciona destaque para o dia atual
         function renderMonthCalendar() {
             const monthDaysContainer = document.getElementById('monthDays');
             monthDaysContainer.innerHTML = '';
@@ -755,7 +785,6 @@
             }
         }
     
-        // MODIFICADO (Fase 2): Adiciona destaque para o dia atual
         function renderYearCalendar() {
             const yearContainer = document.getElementById('yearCalendar');
             yearContainer.innerHTML = '';
@@ -819,7 +848,6 @@
             }
         }
     
-    
         function renderRecentLogs() {
             const container = document.getElementById('recentLogs');
             if (!container) return;
@@ -832,7 +860,7 @@
             }
     
             const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
-            sortedLogs.slice(0, 10).forEach(log => { // Limita a 10 logs
+            sortedLogs.slice(0, 10).forEach(log => {
                 const logElement = document.createElement('div');
                 logElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 flex justify-between items-center cursor-pointer hover:bg-white/5 transition';
                 const logDate = new Date(log.date);
@@ -932,7 +960,7 @@
             });
         }
     
-        // Funções de CRUD (Create, Read, Update, Delete)
+        // Funções de CRUD
         function addHabit(name) {
             const newHabit = { id: generateId(), name: name, createdAt: new Date().toISOString(), logs: [], notes: [] };
             appData.habits.push(newHabit);
@@ -969,7 +997,6 @@
             if (habit) {
                 habit.logs = habit.logs.filter(l => l.id !== logId);
                 saveData();
-                 // ATUALIZADO (Fase 2): Atualiza o modal se ele estiver aberto para o mesmo dia
                 if (!document.getElementById('logModal').classList.contains('hidden')) {
                     renderDailyLogs(state.selectedDateForLog);
                 }
@@ -1021,7 +1048,7 @@
         }
     
         function handleModalConfirm() {
-            const newValue = document.getElementById('modalInput').value; // .trim() removido para permitir anotações com espaços
+            const newValue = document.getElementById('modalInput').value;
             if (state.modalContext === 'habitName' && state.currentHabitId && newValue.trim()) {
                 updateHabitName(state.currentHabitId, newValue.trim());
             } else if (state.modalContext === 'habitNote' && state.currentHabitId) {
@@ -1032,32 +1059,27 @@
             document.getElementById('universalModal').classList.add('hidden');
         }
     
-        // MODIFICADO (Fase 2): Transforma em "Super Modal"
         function showLogModal(date) {
-            state.selectedDateForLog = date; // Salva a data selecionada
-            state.editingLogId = null; // Reseta o ID de edição
+            state.selectedDateForLog = date;
+            state.editingLogId = null;
             
             document.getElementById('logModalTitle').textContent = 'Registrar Atividade';
             document.getElementById('logModalConfirm').textContent = 'Registrar';
             
-            // Preenche a data
             const dateStr = date.toISOString().split('T')[0];
             document.getElementById('logDate').value = dateStr;
             
-            // Preenche com a hora atual (Tarefa 4.1)
             const now = new Date();
             const hours = now.getHours().toString().padStart(2, '0');
             const minutes = now.getMinutes().toString().padStart(2, '0');
             document.getElementById('logTime').value = `${hours}:${minutes}`;
     
-            // Renderiza a lista de logs do dia (Tarefa 4.2)
             renderDailyLogs(date);
             
             document.getElementById('logModal').classList.remove('hidden');
             document.getElementById('logTime').focus();
         }
         
-        // NOVO (Fase 2): Renderiza a lista de logs dentro do modal (Tarefa 4.2 e 4.3)
         function renderDailyLogs(date) {
             const container = document.getElementById('dailyLogsList');
             container.innerHTML = '';
@@ -1085,7 +1107,6 @@
                         <button class="text-xs p-1 rounded hover:bg-red-500/20 text-red-400" data-log-id="${log.id}" data-action="delete">Excluir</button>
                     </div>
                 `;
-                // Botão Editar
                 logEl.querySelector('[data-action="edit"]').addEventListener('click', () => {
                     state.editingLogId = log.id;
                     const logDate = new Date(log.date);
@@ -1094,7 +1115,6 @@
                     document.getElementById('logModalConfirm').textContent = 'Atualizar';
                     document.getElementById('logTime').focus();
                 });
-                // Botão Excluir
                 logEl.querySelector('[data-action="delete"]').addEventListener('click', () => {
                     showConfirmModal('Excluir Registro', `Tem certeza que deseja excluir o registro das ${timeStr}?`, 'deleteLog', log.id);
                 });
@@ -1111,7 +1131,6 @@
                 addLog(state.currentHabitId, dateTime, state.editingLogId);
             }
             
-            // Reseta o formulário e a lista
             state.editingLogId = null;
             document.getElementById('logModalTitle').textContent = 'Registrar Atividade';
             document.getElementById('logModalConfirm').textContent = 'Registrar';
@@ -1155,7 +1174,7 @@
             if (shouldReload) {
                 setTimeout(() => location.reload(), 50);
             } else {
-                updateUI(); // Ações que não recarregam apenas atualizam a UI
+                updateUI();
             }
         }
     
@@ -1190,7 +1209,6 @@
                     try {
                         const restoredData = JSON.parse(event.target.result);
                         if (restoredData && Array.isArray(restoredData.habits)) {
-                            // Garante compatibilidade
                             if (!restoredData.generalNotes) restoredData.generalNotes = [];
                             if (!restoredData.lastActivity) restoredData.lastActivity = null;
                             state.dataToRestore = restoredData;
@@ -1249,13 +1267,13 @@
             const now = new Date();
             const twoDays = 48 * 60 * 60 * 1000;
             if (now - sortedLogs[0] > twoDays) {
-                return null; // A sequência foi quebrada se o último log tem mais de 2 dias
+                return null;
             }
             let streakStartDate = sortedLogs[0];
             for (let i = 0; i < sortedLogs.length - 1; i++) {
                 const diff = sortedLogs[i] - sortedLogs[i+1];
                 if (diff > twoDays) {
-                    break; // Quebrou a sequência
+                    break;
                 }
                 streakStartDate = sortedLogs[i+1];
             }
@@ -1304,8 +1322,8 @@
         }
         
         function startStreakCounter() {
-            updateStreakCounter(); // Executa uma vez imediatamente
-            setInterval(updateStreakCounter, 1000); // E depois a cada segundo
+            updateStreakCounter();
+            setInterval(updateStreakCounter, 1000);
         }
     
         function navigateCalendar(direction) {
@@ -1318,13 +1336,12 @@
                     state.currentMonth = 0;
                     state.currentYear++;
                 }
-            } else { // 'year'
+            } else {
                 state.currentYear += direction;
             }
             updateCalendar();
         }
     
-        // NOVO (Fase 3 / Módulo 6): Renderiza o feed de anotações
         function renderNotesFeed() {
             const container = document.getElementById('notesFeedContent');
             container.innerHTML = '';
@@ -1378,14 +1395,13 @@
             });
         }
     
-        // NOVO (Fase 3 / Módulo 6): Controla a visibilidade do feed na UI
         function updateNotesFeedVisibility() {
             const container = document.getElementById('notesFeedContainer');
             const toggleBtn = document.getElementById('toggleNotesFeedBtn');
             if (appData.isNotesFeedVisible) {
-                renderNotesFeed(); // Renderiza o conteúdo
+                renderNotesFeed();
                 container.classList.remove('hidden');
-                toggleBtn.classList.add('bg-blue-500/20'); // Destaque visual no botão
+                toggleBtn.classList.add('bg-blue-500/20');
             } else {
                 container.classList.add('hidden');
                 toggleBtn.classList.remove('bg-blue-500/20');
@@ -1404,8 +1420,6 @@
                 }[match];
             });
         }
-    
-        // A função makeModalResizable() foi completamente removida.
     
     </script>
 </body>
