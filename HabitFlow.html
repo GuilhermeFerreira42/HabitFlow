@@ -51,32 +51,44 @@
         .is-today {
             box-shadow: 0 0 0 2px #3B82F6; /* Anel azul para o dia atual */
         }
-        /* NOVO: Estilos para o modal maximizado - ABORDAGEM FINAL E MAIS ROBUSTA */
+        /* Garantia de posição fixa e alinhamento à direita da sidebar */
         .modal-maximized {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 16rem;    /* Define o limite esquerdo na largura da sidebar */
-            right: 0;       /* Define o limite direito na borda da tela */
-            width: auto;    /* Deixa o navegador calcular a largura com base em left/right */
-            height: auto;   /* Deixa o navegador calcular a altura com base em top/bottom */
-            max-width: none;
-            border-radius: 0;
-            margin: 0;
-            padding: 0;     /* Remove o padding do contêiner principal quando maximizado */
-            z-index: 51;
+            position: fixed !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            left: 16rem !important; /* Largura exata da sidebar */
+            right: 0 !important;
+            width: auto !important;
+            height: 100vh !important;
+            max-width: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            z-index: 51 !important;
+            transform: none !important;
         }
-        /* Ajusta o conteúdo interno para preencher o espaço e ter o espaçamento correto */
+
+        /* Garante que o conteúdo interno do modal se ajuste corretamente */
         .modal-maximized .modal-content-wrapper {
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding: 1.5rem; /* Adiciona o padding (p-6) aqui dentro */
+            padding: 1.5rem;
+            overflow: hidden;
         }
-        /* Garante que o textarea ocupe o espaço vertical restante */
+
+        /* Força o textarea a ocupar todo o espaço disponível */
         .modal-maximized #modalInput {
-            flex-grow: 1;
+            flex: 1 1 auto;
             min-height: 0;
+            resize: none;
+        }
+
+        /* Posiciona o botão de maximizar/restore dentro do modal */
+        .modal-maximized #modalMaximizeBtn {
+            position: absolute !important;
+            right: 1.5rem !important;
+            top: 1.5rem !important;
+            z-index: 52 !important;
         }
     </style>
 </head>
@@ -511,21 +523,29 @@
             document.getElementById('modalMaximizeBtn').addEventListener('click', () => {
                 const modalContainer = document.querySelector('#universalModal > .glassmorphism');
                 const modalOverlay = document.getElementById('universalModal');
+                const btn = document.getElementById('modalMaximizeBtn');
                 const iconMaximize = document.getElementById('iconMaximize');
                 const iconRestore = document.getElementById('iconRestore');
-    
-                // Alterna a classe de maximização no contêiner do modal
+
+                // Alterna a classe de maximização
                 modalContainer.classList.toggle('modal-maximized');
-    
-                // Verifica se está maximizado para ajustar o overlay e os ícones
+
+                // Força o navegador a recalcular as dimensões do modal
+                void modalContainer.offsetWidth;
+
+                // Ajusta o overlay e o posicionamento do botão
                 if (modalContainer.classList.contains('modal-maximized')) {
                     modalOverlay.classList.remove('items-center', 'justify-center');
+                    modalOverlay.style.overflow = 'visible';
+                    btn.style.right = '1.5rem'; // Garante posicionamento relativo ao modal
                     iconMaximize.classList.add('hidden');
                     iconRestore.classList.remove('hidden');
                 } else {
                     modalOverlay.classList.add('items-center', 'justify-center');
+                    modalOverlay.style.overflow = 'auto';
+                    btn.style.right = '';
                     iconMaximize.classList.remove('hidden');
-                    iconRestore.classList.add('hidden'); // CORRIGIDO: Oculta o ícone de restaurar
+                    iconRestore.classList.add('hidden');
                 }
             });
         }
