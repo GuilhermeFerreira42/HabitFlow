@@ -171,10 +171,6 @@
         
         /* NOVO: Responsividade para telas menores */
         @media (max-width: 768px) {
-            #app-container {
-                /* Força o estado recolhido por padrão em telas pequenas */
-                flex-direction: column; /* Ajuste para evitar problemas de layout flex */
-            }
             #app-container:not(.sidebar-collapsed) #sidebar {
                 /* Quando expandido em telas pequenas, ele sobrepõe o conteúdo */
                 position: absolute;
@@ -203,6 +199,13 @@
             pointer-events: none; /* Impede que o título intercepte cliques do mouse */
         }
         /* FIM DA ALTERAÇÃO */
+
+        /* NOVO: Garante que o overlay NUNCA apareça em telas de desktop */
+        @media (min-width: 769px) {
+            #sidebar-overlay {
+                display: none !important;
+            }
+        }
 
     </style>
 </head>
@@ -269,6 +272,8 @@
                 </a>
             </div>
         </aside>
+
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden"></div>
 
         <main id="main-content" class="flex-1 overflow-y-auto h-screen">
              <button id="sidebar-toggle-external" class="p-2 rounded-full hover:bg-white/10 transition" title="Mostrar menu">
@@ -564,13 +569,22 @@
 
         // NOVO: Função para alternar a sidebar
         function toggleSidebar() {
-            document.getElementById('app-container').classList.toggle('sidebar-collapsed');
+            const container = document.getElementById('app-container');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            container.classList.toggle('sidebar-collapsed');
+
+            // Mostra ou esconde o overlay de acordo com o estado da sidebar
+            const isCollapsed = container.classList.contains('sidebar-collapsed');
+            overlay.classList.toggle('hidden', isCollapsed);
         }
         
         // NOVO: Função para definir o estado inicial da sidebar em telas menores
         function checkInitialSidebarState() {
              if (window.innerWidth <= 768) {
                 document.getElementById('app-container').classList.add('sidebar-collapsed');
+                // Garante que o overlay esteja oculto no estado inicial
+                document.getElementById('sidebar-overlay').classList.add('hidden');
             }
         }
 
@@ -579,6 +593,9 @@
             // NOVO: Listeners para os botões da sidebar
             document.getElementById('sidebar-toggle-internal').addEventListener('click', toggleSidebar);
             document.getElementById('sidebar-toggle-external').addEventListener('click', toggleSidebar);
+            
+            // NOVO: Listener para o overlay da sidebar
+            document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
 
             // Listeners existentes...
             document.getElementById('logoTitle').addEventListener('click', () => showDashboard());
@@ -746,6 +763,18 @@
             window.addEventListener('click', (e) => {
                 if (!e.target.closest('.relative.flex')) {
                     document.querySelectorAll('.actions-dropdown').forEach(m => m.classList.add('hidden'));
+                }
+            });
+            
+            // NOVO: Listener para redimensionamento da janela
+            window.addEventListener('resize', () => {
+                if (window.innerWidth <= 768) {
+                    // Em telas pequenas, garante que o overlay esteja oculto se a sidebar estiver recolhida
+                    const container = document.getElementById('app-container');
+                    const overlay = document.getElementById('sidebar-overlay');
+                    if (container.classList.contains('sidebar-collapsed')) {
+                        overlay.classList.add('hidden');
+                    }
                 }
             });
         }
