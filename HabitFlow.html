@@ -97,6 +97,18 @@
         #habitsListContainer::-webkit-scrollbar-thumb:hover {
             background-color: rgba(255, 255, 255, 0.3);
         }
+        /* TAREFA 5.1: Estilos para o menu dropdown de ações rápidas */
+        .actions-dropdown {
+            background: rgba(30, 41, 59, 0.8); /* bg-slate-800 com transparência */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 0.25rem; /* 4px */
+            z-index: 50;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex">
@@ -195,7 +207,7 @@
                     </h2>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div id="habitDetailStreakCounter" class="bg-white/10 text-lg font-mono px-4 py-2 rounded-full">
+                    <div id="habitDetailStreakCounter" class="streak-counter bg-white/10 text-lg font-mono px-4 py-2 rounded-full">
                         ---
                     </div>
                     <button id="deleteHabitBtn" class="p-2 rounded-full hover:bg-red-500/20 transition text-red-400" title="Excluir Hábito">
@@ -395,6 +407,7 @@
             currentView: 'dashboard', // 'dashboard', 'habitDetail', 'generalNotes', 'settings'
             currentHabitId: null,
             editingNoteId: null,
+            editingHabitId: null, // Adicionado para o menu de ações rápidas
             editingLogId: null,
             selectedDateForLog: null,
             calendarView: 'month', // 'month' ou 'year'
@@ -519,6 +532,7 @@
                             modal.classList.add('hidden');
                         }
                     });
+                     document.querySelectorAll('.actions-dropdown').forEach(m => m.classList.add('hidden'));
                 }
             });
             document.getElementById('prevCalendarBtn').addEventListener('click', navigateCalendar.bind(null, -1));
@@ -567,7 +581,51 @@
                     iconRestore.classList.add('hidden');
                 }
             });
-            // A LINHA QUE CAUSAVA O ERRO FOI REMOVIDA DAQUI
+
+            const sidebarList = document.getElementById('sidebarHabitsList');
+            sidebarList.addEventListener('click', (e) => {
+                const target = e.target.closest('[data-action]');
+                if (!target) return;
+
+                const action = target.getAttribute('data-action');
+                const habitId = target.getAttribute('data-habit-id');
+                
+                if (target.tagName === 'BUTTON') {
+                    e.stopPropagation();
+                }
+
+                switch (action) {
+                    case 'navigate':
+                        document.querySelectorAll('.actions-dropdown').forEach(m => m.classList.add('hidden'));
+                        showHabitDetail(habitId);
+                        break;
+
+                    case 'toggle-menu':
+                        const menu = target.nextElementSibling;
+                        const isHidden = menu.classList.contains('hidden');
+                        document.querySelectorAll('.actions-dropdown').forEach(m => {
+                            if (m !== menu) m.classList.add('hidden');
+                        });
+                        menu.classList.toggle('hidden');
+                        break;
+                    
+                    case 'edit':
+                        const habitNameToEdit = target.getAttribute('data-habit-name');
+                        showEditModal('Editar nome do hábito', habitNameToEdit, 'habitName', habitId);
+                        break;
+                    
+                    case 'delete':
+                        const habitNameToDelete = target.getAttribute('data-habit-name');
+                        showConfirmModal('Excluir Hábito', `Tem certeza que deseja excluir o hábito "${habitNameToDelete}"? Esta ação não pode ser desfeita.`, 'deleteHabit', habitId);
+                        break;
+                }
+            });
+
+            window.addEventListener('click', (e) => {
+                if (!e.target.closest('.relative.flex')) {
+                    document.querySelectorAll('.actions-dropdown').forEach(m => m.classList.add('hidden'));
+                }
+            });
         }
     
         // Funções de navegação
@@ -626,7 +684,7 @@
                     habitCard.innerHTML = `
                       <div class="flex justify-between items-start">
                         <h3 class="font-medium truncate-text pr-2">${escapeHTML(habit.name)}</h3>
-                        <div class="text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
+                        <div class="streak-counter text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
                           ---
                         </div>
                       </div>
@@ -655,21 +713,17 @@
     
             document.getElementById('habitNameTitle').textContent = habit.name;
             document.getElementById('editHabitName').onclick = () => {
-                showEditModal('Editar nome do hábito', habit.name, 'habitName');
+                showEditModal('Editar nome do hábito', habit.name, 'habitName', habit.id);
             };
 
-            // TAREFA 3.2: Adicionar event listener para o botão de excluir hábito
             document.getElementById('deleteHabitBtn').onclick = () => {
                 showConfirmModal('Excluir Hábito', `Tem certeza que deseja excluir o hábito "${escapeHTML(habit.name)}" e todos os seus dados? Esta ação não pode ser desfeita.`, 'deleteHabit', state.currentHabitId);
             };
     
-            // ========== INÍCIO DA ALTERAÇÃO ==========
-            // Define o data-attribute para que a função global de atualização funcione
             const habitDetailCounter = document.getElementById('habitDetailStreakCounter');
             if (habitDetailCounter) {
                 habitDetailCounter.setAttribute('data-habit-id', habit.id);
             }
-            // ========== FIM DA ALTERAÇÃO ==========
     
             updateCalendar();
             renderRecentLogs();
@@ -844,7 +898,6 @@
             }
         }
     
-        // TAREFA 3.1: INÍCIO DA ALTERAÇÃO NA FUNÇÃO renderRecentLogs
         function renderRecentLogs() {
             const container = document.getElementById('recentLogs');
             if (!container) return;
@@ -873,22 +926,19 @@
                     <button class="delete-log-btn text-xs hover:text-red-400 transition ml-4 p-1" title="Excluir Registro Imediatamente">Excluir</button>
                 `;
 
-                // Adiciona evento de clique na área principal para abrir o modal de edição
                 logElement.querySelector('.flex-grow').addEventListener('click', () => {
                     showLogModal(new Date(log.date));
                 });
                 
-                // Adiciona evento de clique no novo botão de exclusão direta
                 const deleteBtn = logElement.querySelector('.delete-log-btn');
                 deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Impede que o evento de clique do contêiner seja acionado
+                    e.stopPropagation(); 
                     deleteLog(state.currentHabitId, log.id);
                 });
 
                 container.appendChild(logElement);
             });
         }
-        // TAREFA 3.1: FIM DA ALTERAÇÃO
     
         function renderHabitNotes() {
             const container = document.getElementById('habitNotes');
@@ -1046,22 +1096,28 @@
             saveData();
         }
     
-        // Funções de modal
         function showEditModal(title, initialValue, context, itemId = null) {
             state.modalContext = context;
+            state.editingNoteId = null;
+            state.editingHabitId = null;
+
             if (context === 'habitNote' || context === 'generalNote') {
                 state.editingNoteId = itemId;
+            } else if (context === 'habitName') {
+                state.editingHabitId = itemId; // Armazena o ID do hábito a ser editado
             }
+
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalInput').value = initialValue;
             document.getElementById('universalModal').classList.remove('hidden');
             document.getElementById('modalInput').focus();
         }
-    
+
         function handleModalConfirm() {
             const newValue = document.getElementById('modalInput').value;
-            if (state.modalContext === 'habitName' && state.currentHabitId && newValue.trim()) {
-                updateHabitName(state.currentHabitId, newValue.trim());
+            // Modificado para usar o ID do hábito do estado, permitindo a edição pela sidebar
+            if (state.modalContext === 'habitName' && state.editingHabitId && newValue.trim()) {
+                updateHabitName(state.editingHabitId, newValue.trim());
             } else if (state.modalContext === 'habitNote' && state.currentHabitId) {
                 addHabitNote(state.currentHabitId, newValue, state.editingNoteId);
             } else if (state.modalContext === 'generalNote') {
@@ -1158,7 +1214,6 @@
             document.getElementById('confirmModal').classList.remove('hidden');
         }
     
-        // TAREFA 3.2: INÍCIO DA ALTERAÇÃO NA FUNÇÃO handleConfirmModalConfirm
         function handleConfirmModalConfirm() {
             const action = document.getElementById('confirmModal').getAttribute('data-action');
             const itemId = document.getElementById('confirmModal').getAttribute('data-item-id');
@@ -1166,7 +1221,7 @@
     
             if (action === 'deleteLog' && state.currentHabitId && itemId) {
                 deleteLog(state.currentHabitId, itemId);
-            } else if (action === 'deleteHabit' && itemId) { // Modificado para usar itemId
+            } else if (action === 'deleteHabit' && itemId) { 
                 deleteHabit(itemId);
             } else if (action === 'deleteHabitNote' && state.currentHabitId && itemId) {
                 deleteHabitNote(state.currentHabitId, itemId);
@@ -1189,7 +1244,6 @@
                 updateUI();
             }
         }
-        // TAREFA 3.2: FIM DA ALTERAÇÃO
     
         // Funções de Backup/Restore
         function handleBackup() {
@@ -1302,25 +1356,47 @@
             }
             const sortedHabits = [...appData.habits].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             sortedHabits.forEach(habit => {
-                const habitLink = document.createElement('a');
-                habitLink.href = '#';
-                habitLink.className = 'flex items-center p-2 text-sm rounded-lg hover:bg-white/10 transition truncate-text';
-                habitLink.textContent = habit.name;
+                const habitEntry = document.createElement('div');
+                habitEntry.className = 'relative flex items-center justify-between rounded-lg hover:bg-white/10 group transition-colors duration-150 cursor-pointer';
+                habitEntry.setAttribute('data-action', 'navigate');
+                habitEntry.setAttribute('data-habit-id', habit.id);
+
+                const habitNameSpan = document.createElement('span');
+                habitNameSpan.className = 'flex-grow p-2 text-sm truncate-text';
+                habitNameSpan.textContent = escapeHTML(habit.name);
+
                 if (state.currentView === 'habitDetail' && state.currentHabitId === habit.id) {
-                    habitLink.classList.add('bg-white/10', 'text-white');
+                    habitNameSpan.classList.add('text-white');
+                    habitEntry.classList.add('bg-white/10');
+                    habitEntry.classList.remove('hover:bg-white/10');
                 } else {
-                    habitLink.classList.add('text-white/70');
+                    habitNameSpan.classList.add('text-white/70');
                 }
-                habitLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showHabitDetail(habit.id);
-                });
-                container.appendChild(habitLink);
+
+                const actionsBtn = document.createElement('button');
+                actionsBtn.className = 'flex-shrink-0 p-2 mr-1 rounded-full hover:bg-white/20 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200';
+                actionsBtn.setAttribute('data-action', 'toggle-menu');
+                actionsBtn.setAttribute('data-habit-id', habit.id);
+                actionsBtn.setAttribute('aria-label', `Ações para ${escapeHTML(habit.name)}`);
+                actionsBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white/70 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01" /></svg>`;
+
+                const dropdownMenu = document.createElement('div');
+                dropdownMenu.className = 'actions-dropdown hidden w-40 rounded-lg shadow-lg';
+                const escapedHabitName = escapeHTML(habit.name);
+                dropdownMenu.innerHTML = `
+                    <button class="block w-full text-left px-3 py-2 text-sm text-white/90 hover:bg-white/10 rounded-t-lg" data-action="edit" data-habit-id="${habit.id}" data-habit-name="${escapedHabitName}">Editar nome</button>
+                    <button class="block w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-white/10 rounded-b-lg" data-action="delete" data-habit-id="${habit.id}" data-habit-name="${escapedHabitName}">Excluir hábito</button>
+                `;
+
+                habitEntry.appendChild(habitNameSpan);
+                habitEntry.appendChild(actionsBtn);
+                habitEntry.appendChild(dropdownMenu);
+                container.appendChild(habitEntry);
             });
         }
     
         function updateStreakCounter() {
-            const habitCounters = document.querySelectorAll('[data-habit-id]');
+            const habitCounters = document.querySelectorAll('.streak-counter');
             habitCounters.forEach(counter => {
                 const habitId = counter.getAttribute('data-habit-id');
                 const streakStartDate = calculateHabitStreak(habitId);
