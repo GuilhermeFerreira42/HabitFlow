@@ -102,7 +102,7 @@
 <body class="bg-gray-900 text-white min-h-screen flex">
     <aside class="w-64 glassmorphism border-r border-white/10 flex flex-col h-screen sticky top-0">
         <div>
-            <div class="mb-8 p-4">
+            <div class="mb-4 p-4">
                 <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
                 <p class="text-sm text-white/60">Seu companheiro de hábitos</p>
             </div>
@@ -127,38 +127,35 @@
                 </ul>
             </nav>
         </div>
-
+    
         <div class="flex-1 flex flex-col min-h-0 mt-4 pt-4 border-t border-white/10">
-            <div class="flex justify-between items-center mb-2 px-4">
+            <div class="mb-2 px-4">
                 <h3 class="text-sm font-semibold text-white/70">MEUS HÁBITOS</h3>
-                <button id="toggleHabitsListBtn" class="p-1 rounded-full hover:bg-white/10 transition" title="Recolher/Expandir">
-                    <svg id="toggleHabitsIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                    </svg>
-                </button>
             </div>
-
-            <div id="habitsCollapsibleContainer" class="flex-1 flex flex-col min-h-0 px-4">
+            
+            <div class="px-4 pb-2">
+                <form id="newHabitForm" class="space-y-2">
+                    <input type="text" id="habitName" placeholder="Novo hábito..." class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition text-sm">Adicionar Hábito</button>
+                </form>
+            </div>
+    
+            <div class="flex-1 flex flex-col min-h-0 px-4 mt-2 pt-2">
                 <div id="habitsListContainer" class="flex-1 overflow-y-auto pr-2">
                     <div id="sidebarHabitsList" class="space-y-1">
                         </div>
                 </div>
-                <div class="mt-auto pt-4">
-                    <form id="newHabitForm" class="space-y-2">
-                        <input type="text" id="habitName" placeholder="Novo hábito..." class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition text-sm">Adicionar Hábito</button>
-                    </form>
-                </div>
             </div>
         </div>
-
-        <div class="mt-4 pt-4 border-t border-white/10 px-4 pb-4">
+    
+        <div class="mt-auto pt-4 border-t border-white/10 px-4 pb-4">
             <a href="#" id="settingsLink" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition text-white/70">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Configurações
             </a>
         </div>
     </aside>
+
     <main class="flex-1 p-6">
         <div id="dashboardView" class="fade-in">
             <div class="flex justify-between items-center mb-6">
@@ -546,11 +543,11 @@
                 const btn = document.getElementById('modalMaximizeBtn');
                 const iconMaximize = document.getElementById('iconMaximize');
                 const iconRestore = document.getElementById('iconRestore');
-
+    
                 modalContainer.classList.toggle('modal-maximized');
-
+    
                 void modalContainer.offsetWidth;
-
+    
                 if (modalContainer.classList.contains('modal-maximized')) {
                     modalOverlay.classList.remove('items-center', 'justify-center');
                     modalOverlay.style.overflow = 'visible';
@@ -565,18 +562,7 @@
                     iconRestore.classList.add('hidden');
                 }
             });
-            document.getElementById('toggleHabitsListBtn').addEventListener('click', () => {
-                const container = document.getElementById('habitsCollapsibleContainer');
-                const icon = document.getElementById('toggleHabitsIcon');
-                
-                container.classList.toggle('hidden');
-                
-                if (container.classList.contains('hidden')) {
-                    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />`;
-                } else {
-                    icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />`;
-                }
-            });
+            // A LINHA QUE CAUSAVA O ERRO FOI REMOVIDA DAQUI
         }
     
         // Funções de navegação
@@ -666,7 +652,7 @@
             document.getElementById('editHabitName').onclick = () => {
                 showEditModal('Editar nome do hábito', habit.name, 'habitName');
             };
-
+    
             // ========== INÍCIO DA ALTERAÇÃO ==========
             // Define o data-attribute para que a função global de atualização funcione
             const habitDetailCounter = document.getElementById('habitDetailStreakCounter');
