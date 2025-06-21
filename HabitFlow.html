@@ -194,10 +194,15 @@
                         </button>
                     </h2>
                 </div>
-                <div id="habitDetailStreakCounter" class="bg-white/10 text-lg font-mono px-4 py-2 rounded-full ml-4">
-                    ---
+                <div class="flex items-center space-x-4">
+                    <div id="habitDetailStreakCounter" class="bg-white/10 text-lg font-mono px-4 py-2 rounded-full">
+                        ---
+                    </div>
+                    <button id="deleteHabitBtn" class="p-2 rounded-full hover:bg-red-500/20 transition text-red-400" title="Excluir Hábito">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
                 </div>
-            </div>
+                </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2">
                     <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
@@ -652,6 +657,11 @@
             document.getElementById('editHabitName').onclick = () => {
                 showEditModal('Editar nome do hábito', habit.name, 'habitName');
             };
+
+            // TAREFA 3.2: Adicionar event listener para o botão de excluir hábito
+            document.getElementById('deleteHabitBtn').onclick = () => {
+                showConfirmModal('Excluir Hábito', `Tem certeza que deseja excluir o hábito "${escapeHTML(habit.name)}" e todos os seus dados? Esta ação não pode ser desfeita.`, 'deleteHabit', state.currentHabitId);
+            };
     
             // ========== INÍCIO DA ALTERAÇÃO ==========
             // Define o data-attribute para que a função global de atualização funcione
@@ -834,36 +844,51 @@
             }
         }
     
+        // TAREFA 3.1: INÍCIO DA ALTERAÇÃO NA FUNÇÃO renderRecentLogs
         function renderRecentLogs() {
             const container = document.getElementById('recentLogs');
             if (!container) return;
             container.innerHTML = '';
-    
+
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit || !habit.logs || habit.logs.length === 0) {
                 container.innerHTML = '<p class="text-sm text-white/40 text-center py-4">Nenhum registro encontrado</p>';
                 return;
             }
-    
+
             const sortedLogs = [...habit.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
             sortedLogs.slice(0, 10).forEach(log => {
                 const logElement = document.createElement('div');
-                logElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 flex justify-between items-center cursor-pointer hover:bg-white/5 transition';
+                logElement.className = 'glassmorphism border border-white/10 rounded-lg p-3 flex justify-between items-center hover:bg-white/5 transition';
+                
                 const logDate = new Date(log.date);
                 const dateStr = logDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
                 const timeStr = logDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                
                 logElement.innerHTML = `
-                    <div>
+                    <div class="flex-grow cursor-pointer">
                         <span class="text-sm">${dateStr}</span>
                         <span class="text-xs text-white/60 ml-2">${timeStr}</span>
                     </div>
+                    <button class="delete-log-btn text-xs hover:text-red-400 transition ml-4 p-1" title="Excluir Registro Imediatamente">Excluir</button>
                 `;
-                logElement.addEventListener('click', () => {
+
+                // Adiciona evento de clique na área principal para abrir o modal de edição
+                logElement.querySelector('.flex-grow').addEventListener('click', () => {
                     showLogModal(new Date(log.date));
                 });
+                
+                // Adiciona evento de clique no novo botão de exclusão direta
+                const deleteBtn = logElement.querySelector('.delete-log-btn');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Impede que o evento de clique do contêiner seja acionado
+                    deleteLog(state.currentHabitId, log.id);
+                });
+
                 container.appendChild(logElement);
             });
         }
+        // TAREFA 3.1: FIM DA ALTERAÇÃO
     
         function renderHabitNotes() {
             const container = document.getElementById('habitNotes');
@@ -1133,6 +1158,7 @@
             document.getElementById('confirmModal').classList.remove('hidden');
         }
     
+        // TAREFA 3.2: INÍCIO DA ALTERAÇÃO NA FUNÇÃO handleConfirmModalConfirm
         function handleConfirmModalConfirm() {
             const action = document.getElementById('confirmModal').getAttribute('data-action');
             const itemId = document.getElementById('confirmModal').getAttribute('data-item-id');
@@ -1140,8 +1166,8 @@
     
             if (action === 'deleteLog' && state.currentHabitId && itemId) {
                 deleteLog(state.currentHabitId, itemId);
-            } else if (action === 'deleteHabit' && state.currentHabitId) {
-                deleteHabit(state.currentHabitId);
+            } else if (action === 'deleteHabit' && itemId) { // Modificado para usar itemId
+                deleteHabit(itemId);
             } else if (action === 'deleteHabitNote' && state.currentHabitId && itemId) {
                 deleteHabitNote(state.currentHabitId, itemId);
             } else if (action === 'deleteGeneralNote' && itemId) {
@@ -1163,6 +1189,7 @@
                 updateUI();
             }
         }
+        // TAREFA 3.2: FIM DA ALTERAÇÃO
     
         // Funções de Backup/Restore
         function handleBackup() {
