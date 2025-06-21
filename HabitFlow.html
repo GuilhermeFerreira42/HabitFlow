@@ -50,6 +50,91 @@
         .is-today {
             box-shadow: 0 0 0 2px #3B82F6; /* Anel azul para o dia atual */
         }
+        #habitsListContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+        #habitsListContainer::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #habitsListContainer::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
+        }
+        #habitsListContainer::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .actions-dropdown {
+            background: rgba(30, 41, 59, 0.8); /* bg-slate-800 com transparência */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: absolute;
+            right: 0;
+            top: 100%;
+            margin-top: 0.25rem; /* 4px */
+            z-index: 50;
+        }
+
+        /* NOVO: Estilos para a Sidebar Retrátil */
+        #app-container {
+            display: flex;
+            width: 100%;
+        }
+
+        #sidebar {
+            flex-shrink: 0; /* Impede que a sidebar encolha além do definido */
+            width: 16rem; /* 256px */
+            transform: translateX(0);
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            overflow: hidden; /* Garante que o conteúdo não vaze durante a animação */
+        }
+
+        #main-content {
+            flex-grow: 1;
+            transition: margin-left 0.3s ease-in-out;
+            position: relative; /* Necessário para posicionar o botão externo */
+        }
+
+		#sidebar-toggle-external {
+			position: absolute;
+			top: 1.5rem; /* MUDANÇA AQUI: 24px */
+			left: 1.5rem; /* 24px */
+			z-index: 40;
+			display: none; /* Começa oculto */
+		}
+		
+		/* NOVO: Regras para corrigir o espaçamento do conteúdo principal */
+		#main-content {
+			padding: 1.5rem; /* 24px - Equivalente ao p-6 que removemos */
+			transition: padding-top 0.3s ease-in-out; /* Anima a mudança de padding */
+		}
+
+		#app-container.sidebar-collapsed #main-content {
+			/* Aumenta o padding do topo quando a sidebar está recolhida para dar espaço ao botão */
+			padding-top: 4rem; /* 64px */
+		}
+
+        /* Estado Recolhido */
+        #app-container.sidebar-collapsed #sidebar {
+            width: 0;
+            transform: translateX(-100%);
+        }
+        
+        #app-container.sidebar-collapsed #main-content {
+            margin-left: 0;
+        }
+
+        #app-container.sidebar-collapsed #sidebar-toggle-external {
+            display: flex; /* Mostra o botão externo quando recolhido */
+        }
+        
+        /* Ajuste do Modal Maximizado quando a sidebar estiver recolhida */
+        #app-container.sidebar-collapsed .modal-maximized {
+            left: 0 !important; /* Ocupa a tela toda */
+        }
+        
         .modal-maximized {
             position: fixed !important;
             top: 0 !important;
@@ -63,6 +148,7 @@
             padding: 0 !important;
             z-index: 51 !important;
             transform: none !important;
+            transition: left 0.3s ease-in-out; /* Animação suave para o modal */
         }
         .modal-maximized .modal-content-wrapper {
             display: flex;
@@ -82,43 +168,47 @@
             top: 1.5rem !important;
             z-index: 52 !important;
         }
-        #habitsListContainer::-webkit-scrollbar {
-            width: 8px;
-        }
-        #habitsListContainer::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        #habitsListContainer::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            border: 2px solid transparent;
-            background-clip: content-box;
-        }
-        #habitsListContainer::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        /* TAREFA 5.1: Estilos para o menu dropdown de ações rápidas */
-        .actions-dropdown {
-            background: rgba(30, 41, 59, 0.8); /* bg-slate-800 com transparência */
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: absolute;
-            right: 0;
-            top: 100%;
-            margin-top: 0.25rem; /* 4px */
-            z-index: 50;
+        
+        /* NOVO: Responsividade para telas menores */
+        @media (max-width: 768px) {
+            #app-container {
+                /* Força o estado recolhido por padrão em telas pequenas */
+                flex-direction: column; /* Ajuste para evitar problemas de layout flex */
+            }
+            #app-container:not(.sidebar-collapsed) #sidebar {
+                /* Quando expandido em telas pequenas, ele sobrepõe o conteúdo */
+                position: absolute;
+                z-index: 45;
+                height: 100vh;
+            }
+            #app-container #sidebar-toggle-external {
+                display: flex; /* Sempre mostra o botão externo */
+            }
+            #app-container.sidebar-collapsed #sidebar-toggle-external {
+                display: flex;
+            }
+            #app-container:not(.sidebar-collapsed) #sidebar-toggle-external {
+                 display: none; /* Oculta o botão externo quando a sidebar está aberta */
+            }
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex">
-    <aside class="w-64 glassmorphism border-r border-white/10 flex flex-col h-screen sticky top-0">
-        <div>
-            <div class="mb-4 p-4">
-                <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
-                <p class="text-sm text-white/60">Seu companheiro de hábitos</p>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div id="app-container">
+        <aside id="sidebar" class="glassmorphism border-r border-white/10 flex flex-col h-screen sticky top-0">
+            <div class="flex items-center justify-between p-4">
+                <div class="flex-grow">
+                     <h1 class="text-2xl font-bold tracking-wide cursor-pointer" id="logoTitle">HabitFlow</h1>
+                     <p class="text-sm text-white/60">Seu companheiro de hábitos</p>
+                </div>
+                <button id="sidebar-toggle-internal" class="p-2 rounded-full hover:bg-white/10 transition" title="Recolher menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
-            <nav>
+
+            <nav class="mb-4">
                 <ul class="space-y-2 px-4">
                     <li>
                         <a href="#" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition" id="dashboardLink">
@@ -138,196 +228,201 @@
                     </li>
                 </ul>
             </nav>
-        </div>
-    
-        <div class="flex-1 flex flex-col min-h-0 mt-4 pt-4 border-t border-white/10">
-            <div class="mb-2 px-4">
-                <h3 class="text-sm font-semibold text-white/70">MEUS HÁBITOS</h3>
-            </div>
-            
-            <div class="px-4 pb-2">
-                <form id="newHabitForm" class="space-y-2">
-                    <input type="text" id="habitName" placeholder="Novo hábito..." class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition text-sm">Adicionar Hábito</button>
-                </form>
-            </div>
-    
-            <div class="flex-1 flex flex-col min-h-0 px-4 mt-2 pt-2">
-                <div id="habitsListContainer" class="flex-1 overflow-y-auto pr-2">
-                    <div id="sidebarHabitsList" class="space-y-1">
-                        </div>
+
+            <div class="flex-1 flex flex-col min-h-0 pt-4 border-t border-white/10">
+                <div class="mb-2 px-4">
+                    <h3 class="text-sm font-semibold text-white/70">MEUS HÁBITOS</h3>
+                </div>
+                
+                <div class="px-4 pb-2">
+                    <form id="newHabitForm" class="space-y-2">
+                        <input type="text" id="habitName" placeholder="Novo hábito..." class="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-full py-2 px-4 transition text-sm">Adicionar Hábito</button>
+                    </form>
+                </div>
+
+                <div class="flex-1 flex flex-col min-h-0 px-4 mt-2 pt-2">
+                    <div id="habitsListContainer" class="flex-1 overflow-y-auto pr-2">
+                        <div id="sidebarHabitsList" class="space-y-1">
+                            </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    
-        <div class="mt-auto pt-4 border-t border-white/10 px-4 pb-4">
-            <a href="#" id="settingsLink" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition text-white/70">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                Configurações
-            </a>
-        </div>
-    </aside>
 
-    <main class="flex-1 p-6">
-        <div id="dashboardView" class="fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Meus Hábitos</h2>
-                <button id="toggleNotesFeedBtn" class="p-2 rounded-full hover:bg-white/10 transition" title="Mostrar/Ocultar Feed de Anotações">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </button>
+            <div class="mt-auto pt-4 border-t border-white/10 px-4 pb-4">
+                <a href="#" id="settingsLink" class="flex items-center p-2 rounded-lg hover:bg-white/10 transition text-white/70">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    Configurações
+                </a>
             </div>
+        </aside>
 
-            <div id="habitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              </div>
-            <div id="notesFeedContainer" class="hidden mt-8">
-                <h2 class="text-xl font-semibold mb-4">Feed de Anotações</h2>
-                <div id="notesFeedContent" class="space-y-4">
-                    </div>
-            </div>
-        </div>
-
-        <div id="habitDetailView" class="hidden fade-in">
+        <main id="main-content" class="flex-1 overflow-y-auto h-screen">
+             <button id="sidebar-toggle-external" class="p-2 rounded-full hover:bg-white/10 transition" title="Mostrar menu">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
             
-            <div class="flex justify-between items-center mb-6">
-                <div class="flex items-center">
-                    <button id="backToDashboard" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+            <div id="dashboardView" class="fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold">Meus Hábitos</h2>
+                    <button id="toggleNotesFeedBtn" class="p-2 rounded-full hover:bg-white/10 transition" title="Mostrar/Ocultar Feed de Anotações">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div id="habitsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+                <div id="notesFeedContainer" class="hidden mt-8">
+                    <h2 class="text-xl font-semibold mb-4">Feed de Anotações</h2>
+                    <div id="notesFeedContent" class="space-y-4">
+                    </div>
+                </div>
+            </div>
+
+            <div id="habitDetailView" class="hidden fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center">
+                        <button id="backToDashboard" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                        </button>
+                        <h2 id="habitDetailTitle" class="text-xl font-semibold flex items-center">
+                            <span id="habitNameTitle"></span>
+                            <button id="editHabitName" class="ml-2 p-1 rounded-full hover:bg-white/10 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                        </h2>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div id="habitDetailStreakCounter" class="streak-counter bg-white/10 text-lg font-mono px-4 py-2 rounded-full">
+                            ---
+                        </div>
+                        <button id="deleteHabitBtn" class="p-2 rounded-full hover:bg-red-500/20 transition text-red-400" title="Excluir Hábito">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2">
+                        <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <button id="prevCalendarBtn" class="p-2 rounded-full hover:bg-white/10 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                                    </button>
+                                    <h3 id="calendarTitle" class="font-medium text-lg w-36 text-center"></h3>
+                                    <button id="nextCalendarBtn" class="p-2 rounded-full hover:bg-white/10 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                    </button>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button id="monthViewBtn" class="text-sm bg-blue-500 px-3 py-1 rounded-full">Mês</button>
+                                    <button id="yearViewBtn" class="text-sm bg-white/5 px-3 py-1 rounded-full hover:bg-white/10 transition">Ano</button>
+                                </div>
+                            </div>
+
+                            <div id="monthCalendar" class="fade-in">
+                                <div class="grid grid-cols-7 gap-1 mb-2">
+                                    <div class="text-center text-sm text-white/60">Dom</div>
+                                    <div class="text-center text-sm text-white/60">Seg</div>
+                                    <div class="text-center text-sm text-white/60">Ter</div>
+                                    <div class="text-center text-sm text-white/60">Qua</div>
+                                    <div class="text-center text-sm text-white/60">Qui</div>
+                                    <div class="text-center text-sm text-white/60">Sex</div>
+                                    <div class="text-center text-sm text-white/60">Sáb</div>
+                                </div>
+                                <div id="monthDays" class="grid grid-cols-7 gap-1">
+                                    </div>
+                            </div>
+
+                            <div id="yearCalendar" class="hidden fade-in">
+                                <div class="grid grid-cols-4 gap-2">
+                                    </div>
+                            </div>
+                        </div>
+
+                        <div class="glassmorphism border border-white/10 rounded-2xl p-4">
+                            <h3 class="font-medium mb-4">Logs Recentes</h3>
+                            <div id="recentLogs" class="space-y-2">
+                                <p class="text-sm text-white/40 text-center py-4">Nenhum registro encontrado</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1">
+                        <div class="glassmorphism border border-white/10 rounded-2xl p-4 h-full flex flex-col">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-medium">Anotações do Hábito</h3>
+                                <button id="addNoteBtn" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full transition">+ Nova</button>
+                            </div>
+                            <div id="habitNotes" class="space-y-3 flex-1 overflow-y-auto">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="generalNotesView" class="hidden fade-in">
+                <div class="flex items-center mb-6">
+                    <button id="backFromNotes" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
                     </button>
-                    <h2 id="habitDetailTitle" class="text-xl font-semibold flex items-center">
-                        <span id="habitNameTitle"></span>
-                        <button id="editHabitName" class="ml-2 p-1 rounded-full hover:bg-white/10 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
+                    <h2 class="text-xl font-semibold">Anotações Gerais</h2>
+                </div>
+
+                <div class="glassmorphism border border-white/10 rounded-2xl p-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-medium">Todas as Anotações</h3>
+                        <button id="addGeneralNoteBtn" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full transition">+ Nova</button>
+                    </div>
+                    <div id="generalNotesList" class="space-y-3">
+                        <p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settingsView" class="hidden fade-in">
+                <div class="flex items-center mb-6">
+                    <button id="backFromSettings" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-semibold">Configurações</h2>
+                </div>
+                <div class="glassmorphism border border-white/10 rounded-2xl p-6 max-w-2xl mx-auto">
+                    <h3 class="font-medium text-lg mb-4">Gerenciamento de Dados</h3>
+                    <p class="text-sm text-white/60 mb-6">Exporte seus dados para um arquivo seguro ou restaure-os a qualquer momento.</p>
+                    <div class="space-y-3">
+                        <button id="backupBtn" class="w-full text-left flex items-center bg-white/5 p-4 rounded-lg hover:bg-white/10 transition">
+                            <span class="flex-1">Fazer Backup dos Dados</span>
+                            <span class="text-sm text-white/70">Exportar .json</span>
                         </button>
-                    </h2>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div id="habitDetailStreakCounter" class="streak-counter bg-white/10 text-lg font-mono px-4 py-2 rounded-full">
-                        ---
-                    </div>
-                    <button id="deleteHabitBtn" class="p-2 rounded-full hover:bg-red-500/20 transition text-red-400" title="Excluir Hábito">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </div>
-                </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2">
-                    <div class="glassmorphism border border-white/10 rounded-2xl p-4 mb-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center space-x-2">
-                                <button id="prevCalendarBtn" class="p-2 rounded-full hover:bg-white/10 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-                                </button>
-                                <h3 id="calendarTitle" class="font-medium text-lg w-36 text-center"></h3>
-                                <button id="nextCalendarBtn" class="p-2 rounded-full hover:bg-white/10 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                </button>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button id="monthViewBtn" class="text-sm bg-blue-500 px-3 py-1 rounded-full">Mês</button>
-                                <button id="yearViewBtn" class="text-sm bg-white/5 px-3 py-1 rounded-full hover:bg-white/10 transition">Ano</button>
-                            </div>
-                        </div>
-
-                        <div id="monthCalendar" class="fade-in">
-                            <div class="grid grid-cols-7 gap-1 mb-2">
-                                <div class="text-center text-sm text-white/60">Dom</div>
-                                <div class="text-center text-sm text-white/60">Seg</div>
-                                <div class="text-center text-sm text-white/60">Ter</div>
-                                <div class="text-center text-sm text-white/60">Qua</div>
-                                <div class="text-center text-sm text-white/60">Qui</div>
-                                <div class="text-center text-sm text-white/60">Sex</div>
-                                <div class="text-center text-sm text-white/60">Sáb</div>
-                            </div>
-                            <div id="monthDays" class="grid grid-cols-7 gap-1">
-                                </div>
-                        </div>
-
-                        <div id="yearCalendar" class="hidden fade-in">
-                            <div class="grid grid-cols-4 gap-2">
-                                </div>
-                        </div>
-                    </div>
-
-                    <div class="glassmorphism border border-white/10 rounded-2xl p-4">
-                        <h3 class="font-medium mb-4">Logs Recentes</h3>
-                        <div id="recentLogs" class="space-y-2">
-                            <p class="text-sm text-white/40 text-center py-4">Nenhum registro encontrado</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-1">
-                    <div class="glassmorphism border border-white/10 rounded-2xl p-4 h-full flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-medium">Anotações do Hábito</h3>
-                            <button id="addNoteBtn" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full transition">+ Nova</button>
-                        </div>
-                        <div id="habitNotes" class="space-y-3 flex-1 overflow-y-auto">
-                        </div>
+                        <button id="restoreBtn" class="w-full text-left flex items-center bg-white/5 p-4 rounded-lg hover:bg-white/10 transition">
+                            <span class="flex-1">Restaurar a partir de Backup</span>
+                             <span class="text-sm text-white/70">Importar .json</span>
+                        </button>
+                         <div class="pt-4 mt-4 border-t border-white/20">
+                             <h3 class="font-medium text-lg mb-4 text-red-400">Zona de Perigo</h3>
+                             <button id="clearDataBtn" class="w-full text-left flex items-center bg-red-500/10 p-4 rounded-lg hover:bg-red-500/20 transition text-red-400">
+                                  <span class="flex-1 font-semibold">Limpar Todos os Dados</span>
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                             </button>
+                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="generalNotesView" class="hidden fade-in">
-            <div class="flex items-center mb-6">
-                <button id="backFromNotes" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                </button>
-                <h2 class="text-xl font-semibold">Anotações Gerais</h2>
-            </div>
-
-            <div class="glassmorphism border border-white/10 rounded-2xl p-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-medium">Todas as Anotações</h3>
-                    <button id="addGeneralNoteBtn" class="text-sm bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full transition">+ Nova</button>
-                </div>
-                <div id="generalNotesList" class="space-y-3">
-                    <p class="text-sm text-white/40 text-center py-4">Nenhuma anotação encontrada</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="settingsView" class="hidden fade-in">
-            <div class="flex items-center mb-6">
-                <button id="backFromSettings" class="mr-4 p-2 rounded-full hover:bg-white/10 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                </button>
-                <h2 class="text-xl font-semibold">Configurações</h2>
-            </div>
-            <div class="glassmorphism border border-white/10 rounded-2xl p-6 max-w-2xl mx-auto">
-                <h3 class="font-medium text-lg mb-4">Gerenciamento de Dados</h3>
-                <p class="text-sm text-white/60 mb-6">Exporte seus dados para um arquivo seguro ou restaure-os a qualquer momento.</p>
-                <div class="space-y-3">
-                    <button id="backupBtn" class="w-full text-left flex items-center bg-white/5 p-4 rounded-lg hover:bg-white/10 transition">
-                        <span class="flex-1">Fazer Backup dos Dados</span>
-                        <span class="text-sm text-white/70">Exportar .json</span>
-                    </button>
-                    <button id="restoreBtn" class="w-full text-left flex items-center bg-white/5 p-4 rounded-lg hover:bg-white/10 transition">
-                        <span class="flex-1">Restaurar a partir de Backup</span>
-                         <span class="text-sm text-white/70">Importar .json</span>
-                    </button>
-                     <div class="pt-4 mt-4 border-t border-white/20">
-                         <h3 class="font-medium text-lg mb-4 text-red-400">Zona de Perigo</h3>
-                         <button id="clearDataBtn" class="w-full text-left flex items-center bg-red-500/10 p-4 rounded-lg hover:bg-red-500/20 transition text-red-400">
-                             <span class="flex-1 font-semibold">Limpar Todos os Dados</span>
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                         </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <div id="universalModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
         <div class="glassmorphism border border-white/10 rounded-2xl p-6 w-full max-w-md">
@@ -400,41 +495,42 @@
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Estado da aplicação
+        // Estado da aplicação (sem alterações)
         const state = {
-            currentView: 'dashboard', // 'dashboard', 'habitDetail', 'generalNotes', 'settings'
+            currentView: 'dashboard',
             currentHabitId: null,
             editingNoteId: null,
-            editingHabitId: null, // Adicionado para o menu de ações rápidas
+            editingHabitId: null,
             editingLogId: null,
             selectedDateForLog: null,
-            calendarView: 'month', // 'month' ou 'year'
+            calendarView: 'month',
             currentMonth: new Date().getMonth(),
             currentYear: new Date().getFullYear(),
-            modalContext: null, // 'habitName', 'habitNote', 'generalNote'
-            dataModalContext: null, // 'backup', 'restore'
+            modalContext: null,
+            dataModalContext: null,
             dataToRestore: null
         };
-    
-        // Inicialização
+
+        // Inicialização (com verificação inicial da sidebar)
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setupEventListeners();
+            checkInitialSidebarState(); // NOVO: Verifica se a sidebar deve começar recolhida
             updateUI();
             startStreakCounter();
         });
-    
-        // Estrutura de dados
+
+        // Estrutura de dados (sem alterações)
         let appData = {
             habits: [],
             generalNotes: [],
             lastActivity: null,
             isNotesFeedVisible: false
         };
-    
-        // Funções de dados
+
+        // Funções de dados (sem alterações)
         function loadData() {
             const savedData = localStorage.getItem('habitFlowData');
             if (savedData) {
@@ -444,18 +540,33 @@
                 }
             }
         }
-    
         function persistData() {
             localStorage.setItem('habitFlowData', JSON.stringify(appData));
         }
-    
         function saveData() {
             persistData();
             updateUI();
         }
-    
-        // Configuração de Event Listeners
+
+        // NOVO: Função para alternar a sidebar
+        function toggleSidebar() {
+            document.getElementById('app-container').classList.toggle('sidebar-collapsed');
+        }
+        
+        // NOVO: Função para definir o estado inicial da sidebar em telas menores
+        function checkInitialSidebarState() {
+             if (window.innerWidth <= 768) {
+                document.getElementById('app-container').classList.add('sidebar-collapsed');
+            }
+        }
+
+        // Configuração de Event Listeners (adicionados listeners para os novos botões)
         function setupEventListeners() {
+            // NOVO: Listeners para os botões da sidebar
+            document.getElementById('sidebar-toggle-internal').addEventListener('click', toggleSidebar);
+            document.getElementById('sidebar-toggle-external').addEventListener('click', toggleSidebar);
+
+            // Listeners existentes...
             document.getElementById('logoTitle').addEventListener('click', () => showDashboard());
             document.getElementById('dashboardLink').addEventListener('click', () => showDashboard());
             document.getElementById('notesLink').addEventListener('click', () => showGeneralNotes());
@@ -547,7 +658,7 @@
             document.getElementById('notesFeedContent').addEventListener('click', (e) => {
                 const card = e.target.closest('[data-note-type]');
                 if (!card) return;
-    
+
                 const type = card.getAttribute('data-note-type');
                 if (type === 'habit') {
                     const habitId = card.getAttribute('data-habit-id');
@@ -562,11 +673,11 @@
                 const btn = document.getElementById('modalMaximizeBtn');
                 const iconMaximize = document.getElementById('iconMaximize');
                 const iconRestore = document.getElementById('iconRestore');
-    
+
                 modalContainer.classList.toggle('modal-maximized');
-    
+
                 void modalContainer.offsetWidth;
-    
+
                 if (modalContainer.classList.contains('modal-maximized')) {
                     modalOverlay.classList.remove('items-center', 'justify-center');
                     modalOverlay.style.overflow = 'visible';
@@ -581,7 +692,6 @@
                     iconRestore.classList.add('hidden');
                 }
             });
-
             const sidebarList = document.getElementById('sidebarHabitsList');
             sidebarList.addEventListener('click', (e) => {
                 const target = e.target.closest('[data-action]');
@@ -599,7 +709,6 @@
                         document.querySelectorAll('.actions-dropdown').forEach(m => m.classList.add('hidden'));
                         showHabitDetail(habitId);
                         break;
-
                     case 'toggle-menu':
                         const menu = target.nextElementSibling;
                         const isHidden = menu.classList.contains('hidden');
@@ -620,14 +729,15 @@
                         break;
                 }
             });
-
             window.addEventListener('click', (e) => {
                 if (!e.target.closest('.relative.flex')) {
                     document.querySelectorAll('.actions-dropdown').forEach(m => m.classList.add('hidden'));
                 }
             });
         }
-    
+        
+        /* Resto do seu JavaScript (sem alterações) */
+        // ... (todo o restante do seu script a partir daqui)
         // Funções de navegação
         function showDashboard() {
             state.currentView = 'dashboard';
@@ -678,20 +788,20 @@
             if (appData.habits.length === 0) {
                 container.innerHTML = '<div class="text-center py-10 text-white/40 col-span-full">Nenhum hábito cadastrado. Adicione um na barra lateral.</div>';
             } else {
-                 appData.habits.forEach(habit => {
+                appData.habits.forEach(habit => {
                     const habitCard = document.createElement('div');
                     habitCard.className = 'glassmorphism border border-white/10 rounded-2xl p-4 habit-card flex flex-col cursor-pointer';
                     habitCard.innerHTML = `
-                      <div class="flex justify-between items-start">
-                        <h3 class="font-medium truncate-text pr-2">${escapeHTML(habit.name)}</h3>
-                        <div class="streak-counter text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
-                          ---
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-medium truncate-text pr-2">${escapeHTML(habit.name)}</h3>
+                            <div class="streak-counter text-xs bg-white/5 px-2 py-1 rounded-full whitespace-nowrap" data-habit-id="${habit.id}">
+                                ---
+                            </div>
                         </div>
-                      </div>
-                      <div class="mt-2 text-sm text-white/60">
-                        ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
-                      </div>
-                      <div class="mini-calendar-container mt-4 flex-grow"></div>
+                        <div class="mt-2 text-sm text-white/60">
+                            ${habit.logs && habit.logs.length > 0 ? `${habit.logs.length} registros` : 'Nenhum registro'}
+                        </div>
+                        <div class="mini-calendar-container mt-4 flex-grow"></div>
                     `;
                     habitCard.addEventListener('click', () => showHabitDetail(habit.id));
                     const miniCalContainer = habitCard.querySelector('.mini-calendar-container');
@@ -699,7 +809,7 @@
                     container.appendChild(habitCard);
                 });
             }
-           
+            
             updateStreakCounter();
             updateNotesFeedVisibility();
         }
@@ -730,7 +840,7 @@
             renderHabitNotes();
     
             document.getElementById('addNoteBtn').onclick = () => {
-                 showEditModal('Nova anotação', '', 'habitNote');
+                showEditModal('Nova anotação', '', 'habitNote');
             };
         }
     
@@ -1011,7 +1121,7 @@
                     <div class="flex justify-between items-start mb-2">
                         <span class="text-xs text-white/60">${noteDate}</span>
                         <div class="flex space-x-2">
-                             <button class="text-xs hover:text-blue-400 transition" onclick="showEditModal('Editar anotação geral', \`${note.content.replace(/`/g, '\`')}\`, 'generalNote', '${note.id}')">Editar</button>
+                             <button class="text-xs hover:text-blue-400 transition" onclick="showEditModal('Editar anotação geral', \`${note.content.replace(/`/g, '\\`')}\`, 'generalNote', '${note.id}')">Editar</button>
                             <button class="text-xs hover:text-red-400 transition" onclick="showConfirmModal('Excluir anotação geral', 'Tem certeza?', 'deleteGeneralNote', '${note.id}')">Excluir</button>
                         </div>
                     </div>
@@ -1140,7 +1250,7 @@
             const hours = now.getHours().toString().padStart(2, '0');
             const minutes = now.getMinutes().toString().padStart(2, '0');
             document.getElementById('logTime').value = `${hours}:${minutes}`;
-    
+
             renderDailyLogs(date);
             
             document.getElementById('logModal').classList.remove('hidden');
@@ -1152,17 +1262,17 @@
             container.innerHTML = '';
             const habit = appData.habits.find(h => h.id === state.currentHabitId);
             if (!habit) return;
-    
+
             const dateStr = formatDate(date);
             const dailyLogs = habit.logs
                 .filter(log => log.date.startsWith(dateStr))
                 .sort((a, b) => new Date(a.date) - new Date(b.date));
-    
+
             if (dailyLogs.length === 0) {
                 container.innerHTML = `<p class="text-sm text-white/40 text-center py-2">Nenhum registro para este dia.</p>`;
                 return;
             }
-    
+
             dailyLogs.forEach(log => {
                 const logEl = document.createElement('div');
                 logEl.className = 'flex justify-between items-center bg-white/5 p-2 rounded-lg';
@@ -1509,7 +1619,7 @@
                 }[match];
             });
         }
-    
+        
     </script>
 </body>
 </html>
