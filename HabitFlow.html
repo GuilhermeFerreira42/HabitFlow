@@ -131,9 +131,20 @@
         }
         
         /* Ajuste do Modal Maximizado quando a sidebar estiver recolhida */
+        /* REMOVIDO: Esta regra não funciona porque o modal está fora do app-container */
+        /*
         #app-container.sidebar-collapsed .modal-maximized {
-            left: 0 !important; /* Ocupa a tela toda */
+            left: 0 !important;
         }
+        
+        body #app-container.sidebar-collapsed .modal-maximized {
+            left: 0 !important;
+        }
+        
+        html body #app-container.sidebar-collapsed .modal-maximized {
+            left: 0 !important;
+        }
+        */
         
         .modal-maximized {
             position: fixed !important;
@@ -205,6 +216,11 @@
             #sidebar-overlay {
                 display: none !important;
             }
+        }
+
+        /* NOVO: Ajuste inteligente do modal maximizado com base no estado do body */
+        body.sidebar-is-collapsed .modal-maximized {
+            left: 0 !important;
         }
 
     </style>
@@ -570,20 +586,27 @@
         // NOVO: Função para alternar a sidebar
         function toggleSidebar() {
             const container = document.getElementById('app-container');
+            const body = document.body; // Pega a referência do body
             const overlay = document.getElementById('sidebar-overlay');
             
+            // Alterna a classe no container principal
             container.classList.toggle('sidebar-collapsed');
+            
+            // NOVO: Alterna a classe de estado diretamente no body
+            body.classList.toggle('sidebar-is-collapsed');
 
-            // Mostra ou esconde o overlay de acordo com o estado da sidebar
-            const isCollapsed = container.classList.contains('sidebar-collapsed');
-            overlay.classList.toggle('hidden', isCollapsed);
+            // Lógica do overlay para mobile (permanece a mesma)
+            if (window.innerWidth <= 768) {
+                const isCollapsed = container.classList.contains('sidebar-collapsed');
+                overlay.classList.toggle('hidden', isCollapsed);
+            }
         }
         
         // NOVO: Função para definir o estado inicial da sidebar em telas menores
         function checkInitialSidebarState() {
-             if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 768) {
                 document.getElementById('app-container').classList.add('sidebar-collapsed');
-                // Garante que o overlay esteja oculto no estado inicial
+                document.body.classList.add('sidebar-is-collapsed'); // NOVO: Adiciona a classe no body também
                 document.getElementById('sidebar-overlay').classList.add('hidden');
             }
         }
